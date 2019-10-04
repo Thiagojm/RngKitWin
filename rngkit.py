@@ -15,6 +15,8 @@ import xlsxwriter
 import subprocess
 from PIL import Image, ImageTk
 import threading
+from bitstring import BitArray, BitStream
+from textwrap import wrap
 
 
 
@@ -91,7 +93,7 @@ labelimg2.grid(row = 0, column = 0, sticky="wens")
 def open_file():
     global data_file
     data_file = filedialog.askopenfilename(initialdir=script_path, title="Select file",
-                                filetypes=(("CSV Files", '*.csv'), ("Text Files", '*.txt'), ("all files", "*.*")))
+                                filetypes=(("all files", "*.*"), ("Binary Files", '*.bin'), ("CSV Files", '*.csv')))
     lbl1.configure(text=data_file)
     btn1.configure(text="Select another file")
 
@@ -108,61 +110,134 @@ lbl2 = tk.Label(frameTab11, text="Create .xlsx File",
                      padx=5, pady=5)  # Text inside window
 lbl2.grid(column=0, row=1, sticky="ew")  # posição do label
 
-def Ztesta(): 
-    ztest = pd.read_csv(data_file, sep=' ', names=["Time", "Ones"])
-    ztest.dropna(inplace = True)
-    ztest = ztest.reset_index()
-    ztest['index'] = ztest['index'] + 1
-    ztest['Sum'] = ztest['Ones'].cumsum()
-    ztest['Average'] = ztest['Sum']/(ztest['index'])
-    ztest['Zscore'] = (ztest['Average']-1024)/(22.62741699796/(ztest['index']**0.5))
-    file_to_save =  data_file.replace(".csv", ".xlsx")
-    data_file2 = os.path.basename(data_file)
-    data_file2 = data_file2.replace(".csv", "")
-    number_rows = len(ztest.index)
-    writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
-    ztest.to_excel(writer,sheet_name='Z-Test',index=False)
-    workbook = writer.book
-    worksheet = writer.sheets['Z-Test']
-    chart = workbook.add_chart({'type': 'line'})
-    chart.set_title({
-    'name': 'Z-Score: ' + data_file2,
-    'name_font': {
-        'name': 'Calibri',
-        'color': 'black',
-        },
-    })
+def Ztesta():
+    if data_file == "":
+        tk.messagebox.showinfo('Atention','Select a file first')
+    elif data_file[-3:] == "csv":
+        ztest = pd.read_csv(data_file, sep=' ', names=["Time", "Ones"])
+        ztest.dropna(inplace = True)
+        ztest = ztest.reset_index()
+        ztest['index'] = ztest['index'] + 1
+        ztest['Sum'] = ztest['Ones'].cumsum()
+        ztest['Average'] = ztest['Sum']/(ztest['index'])
+        ztest['Zscore'] = (ztest['Average']-1024)/(22.62741699796/(ztest['index']**0.5))
+        file_to_save =  data_file.replace(".csv", ".xlsx")
+        data_file2 = os.path.basename(data_file)
+        data_file2 = data_file2.replace(".csv", "")
+        number_rows = len(ztest.index)
+        writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
+        ztest.to_excel(writer,sheet_name='Z-Test',index=False)
+        workbook = writer.book
+        worksheet = writer.sheets['Z-Test']
+        chart = workbook.add_chart({'type': 'line'})
+        chart.set_title({
+        'name': 'Z-Score: ' + data_file2,
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black',
+            },
+        })
 
-    chart.set_x_axis({
-    'name': 'Time',
-    'name_font': {
-        'name': 'Calibri',
-        'color': 'black'
-        },
-    'num_font': {
-        'name': 'Calibri',
-        'color': 'black',
-        },
-    })
+        chart.set_x_axis({
+        'name': 'Time',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black'
+            },
+        'num_font': {
+            'name': 'Calibri',
+            'color': 'black',
+            },
+        })
 
-    chart.set_y_axis({
-    'name': 'Z-Score',
-    'name_font': {
-        'name': 'Calibri',
-        'color': 'black'
-        },
-    'num_font': {
-        'color': 'black',
-        },
-    })
+        chart.set_y_axis({
+        'name': 'Z-Score',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black'
+            },
+        'num_font': {
+            'color': 'black',
+            },
+        })
 
-    chart.set_legend({'position': 'none'})
-    chart.add_series({'values': ['Z-Test', 1, 5, number_rows, 5],
-                      'categories': ['Z-Test', 1, 1, number_rows, 1]})
-    worksheet.insert_chart('G2', chart)
-    writer.save()
-    tk.messagebox.showinfo('File Saved','Saved as ' + file_to_save)
-    
+        chart.set_legend({'position': 'none'})
+        chart.add_series({'values': ['Z-Test', 1, 5, number_rows, 5],
+                          'categories': ['Z-Test', 1, 1, number_rows, 1]})
+        worksheet.insert_chart('G2', chart)
+        writer.save()
+        tk.messagebox.showinfo('File Saved','Saved as ' + file_to_save)
+    elif data_file[-3:] == "bin":
+        tk.messagebox.showinfo('Warning',"""This couls take several seconds, please wait.
+Please do not close the Window.
+Press OK to start Analysis.""")
+        global num_ones_array
+        num_ones_array = []
+        with open(data_file, "rb") as file: # open binary file
+            bin_hex = BitArray(file) # bin to hex
+        bin_ascii = bin_hex.bin
+        total_bits = len(bin_ascii)
+        split_bin_ascii = wrap(bin_ascii, 2048) # split in 2048 bits per line - 1 second
+        for i in split_bin_ascii: # calculate number of 'ones' in each of the 2048 bits lines
+            num_ones_array.append(i.count('1'))
+        binSheet = pd.DataFrame()                       # Array to Pandas Column
+        binSheet['Ones'] = num_ones_array
+        binSheet.dropna(inplace = True)
+        binSheet = binSheet.reset_index()
+        binSheet['index'] = binSheet['index'] + 1
+        binSheet = binSheet.rename(columns = {'index': 'Time'})
+        binSheet['Sum'] = binSheet['Ones'].cumsum()
+        binSheet['Average'] = binSheet['Sum']/(binSheet['Time'])
+        binSheet['Zscore'] = (binSheet['Average']-1024)/(22.62741699796/(binSheet['Time']**0.5))
+
+        file_to_save = data_file.replace(".bin", ".xlsx")
+        #data_file2 = os.path.basename(data_file)
+        #data_file2 = data_file2.replace(".csv", "")
+        number_rows = len(binSheet.Time)
+        writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
+        binSheet.to_excel(writer,sheet_name='Z-Test',index=False)
+        workbook = writer.book
+        worksheet = writer.sheets['Z-Test']
+        chart = workbook.add_chart({'type': 'line'})
+        chart.set_title({
+        'name': 'Z-Score: ',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black',
+            },
+        })
+
+        chart.set_x_axis({
+        'name': 'Time',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black'
+            },
+        'num_font': {
+            'name': 'Calibri',
+            'color': 'black',
+            },
+        })
+
+        chart.set_y_axis({
+        'name': 'Z-Score',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black'
+            },
+        'num_font': {
+            'color': 'black',
+            },
+        })
+
+        chart.set_legend({'position': 'none'})
+        chart.add_series({'values': ['Z-Test', 1, 4, number_rows, 4],
+                          'categories': ['Z-Test', 1, 0, number_rows, 0]})
+        worksheet.insert_chart('G2', chart)
+        writer.save()
+        tk.messagebox.showinfo('File Saved','Saved as ' + file_to_save)        
+    else:
+        tk.messagebox.showinfo('Warning', 'Wrong File Type, Select a .bin or .csv file')
 
 btn2 = tk.Button(frameTab12, text="Generate", bg="white", fg="blue",
                      command=Ztesta,
@@ -175,63 +250,143 @@ lbl3 = tk.Label(frameTab11, text="Create and Save as...",
                      padx=5, pady=5)  # Text inside window
 lbl3.grid(column=0, row=2, sticky="ew")  # posição do label
 
-def Ztest(): 
-    ztest = pd.read_csv(data_file, sep=' ', names=["Time", "Ones"])
-    ztest.dropna(inplace = True)
-    ztest = ztest.reset_index()
-    ztest['index'] = ztest['index'] + 1
-    ztest['Sum'] = ztest['Ones'].cumsum()
-    ztest['Average'] = ztest['Sum']/(ztest['index'])
-    ztest['Zscore'] = (ztest['Average']-1024)/(22.62741699796/(ztest['index']**0.5))
-    data_file2 = os.path.basename(data_file)
-    data_file2 = data_file2.replace(".csv", "")
-    file_to_save =  filedialog.asksaveasfilename(initialdir=script_path,
-                                                 initialfile=data_file2,
-                                                 title="Select file", 
-                                                 filetypes=(("XLSX Files", '*.xlsx'),("all files","*.*")))
-    number_rows = len(ztest.index)
-    writer = pd.ExcelWriter((file_to_save + ".xlsx"), engine='xlsxwriter')
-    ztest.to_excel(writer,sheet_name='Z-Test',index=False)
-    workbook = writer.book
-    worksheet = writer.sheets['Z-Test']
-    chart = workbook.add_chart({'type': 'line'})
-    chart.set_title({
-    'name': 'Z-Score: ' + data_file2,
-    'name_font': {
-        'name': 'Calibri',
-        'color': 'black',
-        },
-    })
+def Ztest():
+    if data_file == "":
+        tk.messagebox.showinfo('Atention','Select a file first')
+    elif data_file[-3:] == "csv":
+        ztest = pd.read_csv(data_file, sep=' ', names=["Time", "Ones"])
+        ztest.dropna(inplace = True)
+        ztest = ztest.reset_index()
+        ztest['index'] = ztest['index'] + 1
+        ztest['Sum'] = ztest['Ones'].cumsum()
+        ztest['Average'] = ztest['Sum']/(ztest['index'])
+        ztest['Zscore'] = (ztest['Average']-1024)/(22.62741699796/(ztest['index']**0.5))
+        data_file2 = os.path.basename(data_file)
+        data_file2 = data_file2.replace(".csv", "")
+        file_to_save =  filedialog.asksaveasfilename(initialdir=script_path,
+                                                     initialfile=data_file2,
+                                                     title="Select file", 
+                                                     filetypes=(("XLSX Files", '*.xlsx'),("all files","*.*")))
+        number_rows = len(ztest.index)
+        writer = pd.ExcelWriter((file_to_save + ".xlsx"), engine='xlsxwriter')
+        ztest.to_excel(writer,sheet_name='Z-Test',index=False)
+        workbook = writer.book
+        worksheet = writer.sheets['Z-Test']
+        chart = workbook.add_chart({'type': 'line'})
+        chart.set_title({
+        'name': 'Z-Score: ' + data_file2,
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black',
+            },
+        })
 
-    chart.set_x_axis({
-    'name': 'Time',
-    'name_font': {
-        'name': 'Calibri',
-        'color': 'black'
-        },
-    'num_font': {
-        'name': 'Calibri',
-        'color': 'black',
-        },
-    })
+        chart.set_x_axis({
+        'name': 'Time',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black'
+            },
+        'num_font': {
+            'name': 'Calibri',
+            'color': 'black',
+            },
+        })
 
-    chart.set_y_axis({
-    'name': 'Z-Score',
-    'name_font': {
-        'name': 'Calibri',
-        'color': 'black'
-        },
-    'num_font': {
-        'color': 'black',
-        },
-    })
+        chart.set_y_axis({
+        'name': 'Z-Score',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black'
+            },
+        'num_font': {
+            'color': 'black',
+            },
+        })
 
-    chart.set_legend({'position': 'none'})
-    chart.add_series({'values': ['Z-Test', 1, 5, number_rows, 5],
-                      'categories': ['Z-Test', 1, 1, number_rows, 1]})
-    worksheet.insert_chart('G2', chart)
-    writer.save()
-    tk.messagebox.showinfo('File Saved','Saved as ' + file_to_save)
+        chart.set_legend({'position': 'none'})
+        chart.add_series({'values': ['Z-Test', 1, 5, number_rows, 5],
+                          'categories': ['Z-Test', 1, 1, number_rows, 1]})
+        worksheet.insert_chart('G2', chart)
+        writer.save()
+        tk.messagebox.showinfo('File Saved','Saved as ' + file_to_save)
+    elif data_file[-3:] == "bin":
+        data_file2 = os.path.basename(data_file)
+        data_file2 = data_file2.replace(".bin", "")
+        file_to_save =  filedialog.asksaveasfilename(initialdir=script_path,
+                                                     initialfile=data_file2,
+                                                     title="Select file", 
+                                                     filetypes=(("XLSX Files", '*.xlsx'),("all files","*.*")))
+        tk.messagebox.showinfo('Warning',"""This couls take several seconds, please wait.
+Please do not close the Window.
+Press OK to start Analysis.""")
+        global num_ones_array
+        num_ones_array = []
+        with open(data_file, "rb") as file: # open binary file
+            bin_hex = BitArray(file) # bin to hex
+        bin_ascii = bin_hex.bin
+        total_bits = len(bin_ascii)
+        split_bin_ascii = wrap(bin_ascii, 2048) # split in 2048 bits per line - 1 second
+        for i in split_bin_ascii: # calculate number of 'ones' in each of the 2048 bits lines
+            num_ones_array.append(i.count('1'))
+        binSheet = pd.DataFrame()                       # Array to Pandas Column
+        binSheet['Ones'] = num_ones_array
+        binSheet.dropna(inplace = True)
+        binSheet = binSheet.reset_index()
+        binSheet['index'] = binSheet['index'] + 1
+        binSheet = binSheet.rename(columns = {'index': 'Time'})
+        binSheet['Sum'] = binSheet['Ones'].cumsum()
+        binSheet['Average'] = binSheet['Sum']/(binSheet['Time'])
+        binSheet['Zscore'] = (binSheet['Average']-1024)/(22.62741699796/(binSheet['Time']**0.5))
+
+        file_to_save = file_to_save.replace(".bin", ".xlsx")
+        #data_file2 = os.path.basename(data_file)
+        #data_file2 = data_file2.replace(".csv", "")
+        number_rows = len(binSheet.Time)
+        writer = pd.ExcelWriter((file_to_save + ".xlsx"), engine='xlsxwriter')
+        binSheet.to_excel(writer,sheet_name='Z-Test',index=False)
+        workbook = writer.book
+        worksheet = writer.sheets['Z-Test']
+        chart = workbook.add_chart({'type': 'line'})
+        chart.set_title({
+        'name': 'Z-Score: ',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black',
+            },
+        })
+
+        chart.set_x_axis({
+        'name': 'Time',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black'
+            },
+        'num_font': {
+            'name': 'Calibri',
+            'color': 'black',
+            },
+        })
+
+        chart.set_y_axis({
+        'name': 'Z-Score',
+        'name_font': {
+            'name': 'Calibri',
+            'color': 'black'
+            },
+        'num_font': {
+            'color': 'black',
+            },
+        })
+
+        chart.set_legend({'position': 'none'})
+        chart.add_series({'values': ['Z-Test', 1, 4, number_rows, 4],
+                          'categories': ['Z-Test', 1, 0, number_rows, 0]})
+        worksheet.insert_chart('G2', chart)
+        writer.save()
+        tk.messagebox.showinfo('File Saved','Saved as ' + (file_to_save + ".xlsx"))        
+    else:
+        tk.messagebox.showinfo('Warning', 'Wrong File Type, Select a .bin or .csv file')
     
 
 btn3 = tk.Button(frameTab12, text="Save as...", bg="white", fg="blue",

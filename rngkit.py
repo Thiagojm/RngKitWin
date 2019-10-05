@@ -11,12 +11,14 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import os
 import time
+from time import localtime, strftime
 import xlsxwriter
 import subprocess
 from PIL import Image, ImageTk
 import threading
 from bitstring import BitArray, BitStream
 from textwrap import wrap
+import random
 
 
 
@@ -497,7 +499,21 @@ def bbla():  # criar função para quando o botão for clicado
 
 
 def rng():  # criar função para quando o botão for clicado
-    subprocess.run(["./rng"], shell=True)
+    #subprocess.call('.\RNG Capture.bat')
+    file_name = time.strftime("%Y%m%d-%H%M%S")
+    is_true = 20
+    while is_true != 0:
+        is_true -= 1
+        #with open('/dev/random', "rb") as file:  # open binary file
+            #chunk = file.read(256)  # define number of bytes to read
+        list = []
+        for x in range(2048):
+            list.append(random.randint(0, 1))
+        chunk = ''.join((str(e) for e in list))
+        num_ones_array = chunk.count('1')  # count numbers of ones in the 2048 string
+        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+            write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
+        time.sleep(1)
 
 
 def mbbla():

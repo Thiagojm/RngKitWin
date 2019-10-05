@@ -35,6 +35,6 @@ pip3 install xlsxwriter
 # PyInstaller  
 
 To make executable with pyinstaller:
-/usr/bin/python3 -m PyInstaller --hidden-import=PIL._tkinter_finder zplot.py  
+pyinstaller --noconsole --hidden-import=PIL._tkinter_finder rngkit.py
 
 Then copy the pictures to the RngKit folder and the bash scripts (bbla, mbbla, rng)  

@@ -41,7 +41,7 @@ isLiveOn = False
 
 # Parametros tkinter
 window = tk.Tk()
-#window.geometry('880x180')  # window size
+window.geometry('880x180')  # window size
 window.title("Welcome to RNG Project App")  # window title
 
 # Adding Tabs tabs
@@ -96,7 +96,7 @@ def open_file():
     global data_file
     data_file = filedialog.askopenfilename(initialdir=script_path, title="Select file",
                                 filetypes=(("all files", "*.*"), ("Binary Files", '*.bin'), ("CSV Files", '*.csv')))
-    lbl1.configure(text=data_file)
+    lbl1.configure(text=data_file[-40::])
     btn1.configure(text="Select another file")
 
 

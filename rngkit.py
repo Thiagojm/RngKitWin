@@ -495,7 +495,23 @@ labelmatrix.grid(row = 0, column = 0, sticky="wens")
 
 def bbla():  # criar função para quando o botão for clicado
     selectedCombo = comboBbla.get()
-    subprocess.run(["./bbla f{}".format(selectedCombo)], shell=True)
+    global isCapturingOn
+    isCapturingOn = True
+    startupinfo = None
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    file_name = time.strftime("%Y%m%d-%H%M%S")
+    while isCapturingOn:
+        with open(file_name + '.bin', "ab") as bin_file:  # save binary file
+            proc = subprocess.Popen("seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(selectedCombo), stdout=subprocess.PIPE, startupinfo=startupinfo)
+            chunk = proc.stdout.read()
+            bin_file.write(chunk)
+        bin_hex = BitArray(chunk)  # bin to hex
+        bin_ascii = bin_hex.bin  # hex to ASCII
+        num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
+        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+            write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
+        time.sleep(0.2)
 
 
 def rng():  # criar função para quando o botão for clicado
@@ -534,7 +550,7 @@ def startCollecting():  # criar função para quando o botão for clicado
     if isCapturingOn == False:
         isCapturingOn = True
         if selectedColeta.get() == 1:
-            bbla()
+            threading.Thread(target=bbla).start()
         elif selectedColeta.get() == 2:
             rng()
         elif selectedColeta.get() == 3:
@@ -551,14 +567,6 @@ def stopCollecting():
     global selectedColeta
     if isCapturingOn == True:
         isCapturingOn = False
-        if selectedColeta.get() == 1:
-            subprocess.run(["ps -ef | awk '/bbla/{print$2}' | sudo xargs kill 2>/dev/null"], shell=True)   
-        elif selectedColeta.get() == 2:
-            subprocess.run(["ps -ef | awk '/rng/{print$2}' | sudo xargs kill 2>/dev/null"], shell=True)
-        elif selectedColeta.get() == 3:
-            subprocess.run(["ps -ef | awk '/mbbla/{print$2}' | sudo xargs kill 2>/dev/null"], shell=True)
-        elif selectedColeta.get() == 4:
-            subprocess.run(["ps -ef | awk '/mrng/{print$2}' | sudo xargs kill 2>/dev/null"], shell=True)
         tk.messagebox.showinfo('File Saved','Salvo em ' + script_path + '/coletas')
     else:
         tk.messagebox.showinfo('Alert','Capture not started')

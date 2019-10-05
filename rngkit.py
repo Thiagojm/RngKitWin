@@ -502,6 +502,7 @@ def bbla():  # criar função para quando o botão for clicado
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     file_name = time.strftime("%Y%m%d-%H%M%S")
     while isCapturingOn:
+        start_cap = int(time.time() * 1000)
         with open(file_name + '.bin', "ab") as bin_file:  # save binary file
             proc = subprocess.Popen("seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(selectedCombo), stdout=subprocess.PIPE, startupinfo=startupinfo)
             chunk = proc.stdout.read()
@@ -511,7 +512,12 @@ def bbla():  # criar função para quando o botão for clicado
         num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
-        time.sleep(0.2)
+        end_cap = int(time.time() * 1000)
+        print(1 - (end_cap - start_cap)/1000)
+        try:
+            time.sleep(1 - (end_cap - start_cap)/1000)
+        except Exception:
+            pass
 
 
 def rng():  # criar função para quando o botão for clicado

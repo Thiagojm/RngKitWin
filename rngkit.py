@@ -235,7 +235,7 @@ Press OK to start Analysis.""")
                           'categories': ['Z-Test', 1, 0, number_rows, 0]})
         worksheet.insert_chart('G2', chart)
         writer.save()
-        tk.messagebox.showinfo('File Saved','Saved as ' + file_to_save)        
+        tk.messagebox.showinfo('File Saved','Saved as ' + (file_to_save + ".xlsx"))
     else:
         tk.messagebox.showinfo('Warning', 'Wrong File Type, Select a .bin or .csv file')
 

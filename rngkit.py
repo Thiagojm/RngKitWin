@@ -41,7 +41,7 @@ isLiveOn = False
 
 # Parametros tkinter
 window = tk.Tk()
-window.geometry('880x180')  # window size
+#window.geometry('880x180')  # window size
 window.title("Welcome to RNG Project App")  # window title
 
 # Adding Tabs tabs
@@ -107,7 +107,7 @@ btn1 = tk.Button(frameTab12, text="Select File", bg="white", fg="blue",
 btn1.grid(column=1, row=0, sticky="ew")  # posição do botão
 
 # Linha 2 - Salvar arquivo para xlxs direto
-lbl2 = tk.Label(frameTab11, text="Create .xlsx File",
+lbl2 = tk.Label(frameTab11, text="Generate .xlsx File",
                     font=("Arial Bold", 11),
                      padx=5, pady=5)  # Text inside window
 lbl2.grid(column=0, row=1, sticky="ew")  # posição do label
@@ -237,7 +237,7 @@ Press OK to start Analysis.""")
                           'categories': ['Z-Test', 1, 0, number_rows, 0]})
         worksheet.insert_chart('G2', chart)
         writer.save()
-        tk.messagebox.showinfo('File Saved','Saved as ' + (file_to_save + ".xlsx"))
+        tk.messagebox.showinfo('File Saved','Saved as ' + file_to_save)
     else:
         tk.messagebox.showinfo('Warning', 'Wrong File Type, Select a .bin or .csv file')
 
@@ -247,7 +247,7 @@ btn2 = tk.Button(frameTab12, text="Generate", bg="white", fg="blue",
 btn2.grid(column=1, row=1, sticky="ew")  # posição do botão
 
 # Linha 3 - Salvar as arquivo para xlxs
-lbl3 = tk.Label(frameTab11, text="Create and Save as...",
+lbl3 = tk.Label(frameTab11, text="Generate and Save as...",
                     font=("Arial Bold", 11),
                      padx=5, pady=5)  # Text inside window
 lbl3.grid(column=0, row=2, sticky="ew")  # posição do label
@@ -265,7 +265,7 @@ def Ztest():
         ztest['Zscore'] = (ztest['Average']-1024)/(22.62741699796/(ztest['index']**0.5))
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".csv", "")
-        file_to_save =  filedialog.asksaveasfilename(initialdir=script_path,
+        file_to_save = filedialog.asksaveasfilename(initialdir=script_path,
                                                      initialfile=data_file2,
                                                      title="Select file", 
                                                      filetypes=(("XLSX Files", '*.xlsx'),("all files","*.*")))
@@ -311,7 +311,7 @@ def Ztest():
                           'categories': ['Z-Test', 1, 1, number_rows, 1]})
         worksheet.insert_chart('G2', chart)
         writer.save()
-        tk.messagebox.showinfo('File Saved','Saved as ' + file_to_save)
+        tk.messagebox.showinfo('File Saved','Saved as ' + (file_to_save + ".xlsx"))
     elif data_file[-3:] == "bin":
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".bin", "")

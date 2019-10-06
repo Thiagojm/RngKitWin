@@ -660,8 +660,6 @@ lbl31i.grid(column=0, row=2, sticky="ew")  # posição do label
 # Funções
 
 def livePlotConf():
-    subprocess.run(["ps -ef | awk '/blive/{print$2}' | sudo xargs kill 2>/dev/null"], shell=True)
-    subprocess.run(["ps -ef | awk '/rnglive/{print$2}' | sudo xargs kill 2>/dev/null"], shell=True)
     plt.rcParams["figure.figsize"] = (12, 6)
     fig = plt.figure()
     ax1 = fig.add_subplot(1,1,1)

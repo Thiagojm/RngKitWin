@@ -84,7 +84,7 @@ labelimg2.grid(row = 0, column = 0, sticky="wens")
 def open_file():
     global data_file
     data_file = filedialog.askopenfilename(initialdir=script_path, title="Select file",
-                                filetypes=(("all files", "*.*"), ("Binary Files", '*.bin'), ("CSV Files", '*.csv')))
+                                filetypes=[("CSV and Binary", "*.csv *.bin"),("All Files", "*.*")])
     lbl1.configure(text=data_file[-40::])
     btn1.configure(text="Select another file")
 
@@ -112,7 +112,7 @@ def Ztesta():
         ztest['Sum'] = ztest['Ones'].cumsum()
         ztest['Average'] = ztest['Sum']/(ztest['index'])
         ztest['Zscore'] = (ztest['Average']-1024)/(22.62741699796/(ztest['index']**0.5))
-        file_to_save =  data_file.replace(".csv", ".xlsx")
+        file_to_save = data_file.replace(".csv", ".xlsx")
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".csv", "")
         number_rows = len(ztest.index)
@@ -182,8 +182,8 @@ Press OK to start Analysis.""")
         binSheet['Zscore'] = (binSheet['Average']-1024)/(22.62741699796/(binSheet['Time']**0.5))
 
         file_to_save = data_file.replace(".bin", ".xlsx")
-        #data_file2 = os.path.basename(data_file)
-        #data_file2 = data_file2.replace(".csv", "")
+        data_file2 = os.path.basename(data_file)
+        data_file2 = data_file2.replace(".csv", "")
         number_rows = len(binSheet.Time)
         writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
         binSheet.to_excel(writer,sheet_name='Z-Test',index=False)
@@ -191,7 +191,7 @@ Press OK to start Analysis.""")
         worksheet = writer.sheets['Z-Test']
         chart = workbook.add_chart({'type': 'line'})
         chart.set_title({
-        'name': 'Z-Score: ',
+        'name': 'Z-Score: ' + data_file2,
         'name_font': {
             'name': 'Calibri',
             'color': 'black',
@@ -260,6 +260,8 @@ def Ztest():
                                                      filetypes=(("XLSX Files", '*.xlsx'),("all files","*.*")))
         if len(file_to_save) < 1:
             return
+        data_file2 = os.path.basename(data_file)
+        data_file2 = data_file2.replace(".csv", "")
         number_rows = len(ztest.index)
         writer = pd.ExcelWriter((file_to_save + ".xlsx"), engine='xlsxwriter')
         ztest.to_excel(writer,sheet_name='Z-Test',index=False)
@@ -335,8 +337,8 @@ Press OK to start Analysis.""")
         binSheet['Zscore'] = (binSheet['Average']-1024)/(22.62741699796/(binSheet['Time']**0.5))
 
         file_to_save = file_to_save.replace(".bin", ".xlsx")
-        #data_file2 = os.path.basename(data_file)
-        #data_file2 = data_file2.replace(".csv", "")
+        data_file2 = os.path.basename(data_file)
+        data_file2 = data_file2.replace(".csv", "")
         number_rows = len(binSheet.Time)
         writer = pd.ExcelWriter((file_to_save + ".xlsx"), engine='xlsxwriter')
         binSheet.to_excel(writer,sheet_name='Z-Test',index=False)
@@ -344,7 +346,7 @@ Press OK to start Analysis.""")
         worksheet = writer.sheets['Z-Test']
         chart = workbook.add_chart({'type': 'line'})
         chart.set_title({
-        'name': 'Z-Score: ',
+        'name': 'Z-Score: ' + data_file2,
         'name_font': {
             'name': 'Calibri',
             'color': 'black',

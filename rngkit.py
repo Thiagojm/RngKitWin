@@ -12,11 +12,10 @@ import matplotlib.animation as animation
 import os
 import time
 from time import localtime, strftime
-import xlsxwriter
 import subprocess
 from PIL import Image, ImageTk
 import threading
-from bitstring import BitArray, BitStream
+from bitstring import BitArray
 from textwrap import wrap
 import serial
 from serial.tools import list_ports
@@ -25,17 +24,6 @@ from serial.tools import list_ports
 
 # define o local da onde o script esta sendo rodado
 global script_path
-global isCapturingOn
-global selectedColeta
-global selectedCombo
-global selectedComboM1
-global selectedComboM2
-global selectedEntryId1
-global selectedEntryId2
-global selectedLive
-global selectedComboLive
-global bLiveName
-global isLiveOn
 script_path = os.getcwd()
 isCapturingOn = False
 isLiveOn = False
@@ -518,7 +506,7 @@ def bbla():  # criar função para quando o botão for clicado
         with open(file_name + '_bit.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        print(1 - (end_cap - start_cap)/1000)
+        #print(1 - (end_cap - start_cap)/1000)
         try:
             time.sleep(1 - (end_cap - start_cap)/1000)
         except Exception:
@@ -564,7 +552,7 @@ def trng3():
         with open(file_name + '_true.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        print(1 - (end_cap - start_cap) / 1000)
+        #print(1 - (end_cap - start_cap) / 1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:

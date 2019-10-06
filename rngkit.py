@@ -270,6 +270,8 @@ def Ztest():
                                                      initialfile=data_file2,
                                                      title="Select file", 
                                                      filetypes=(("XLSX Files", '*.xlsx'),("all files","*.*")))
+        if len(file_to_save) < 1:
+            return
         number_rows = len(ztest.index)
         writer = pd.ExcelWriter((file_to_save + ".xlsx"), engine='xlsxwriter')
         ztest.to_excel(writer,sheet_name='Z-Test',index=False)
@@ -316,10 +318,12 @@ def Ztest():
     elif data_file[-3:] == "bin":
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".bin", "")
-        file_to_save =  filedialog.asksaveasfilename(initialdir=script_path,
+        file_to_save = filedialog.asksaveasfilename(initialdir=script_path,
                                                      initialfile=data_file2,
                                                      title="Select file",
                                                      filetypes=(("XLSX Files", '*.xlsx'),("all files","*.*")))
+        if len(file_to_save) < 1:
+            return
         tk.messagebox.showinfo('Warning',"""This couls take several seconds, please wait.
 Please do not close the Window.
 Press OK to start Analysis.""")

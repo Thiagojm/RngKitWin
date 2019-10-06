@@ -18,7 +18,8 @@ from PIL import Image, ImageTk
 import threading
 from bitstring import BitArray, BitStream
 from textwrap import wrap
-import random
+import serial
+from serial.tools import list_ports
 
 
 
@@ -317,7 +318,7 @@ def Ztest():
         data_file2 = data_file2.replace(".bin", "")
         file_to_save =  filedialog.asksaveasfilename(initialdir=script_path,
                                                      initialfile=data_file2,
-                                                     title="Select file", 
+                                                     title="Select file",
                                                      filetypes=(("XLSX Files", '*.xlsx'),("all files","*.*")))
         tk.messagebox.showinfo('Warning',"""This couls take several seconds, please wait.
 Please do not close the Window.
@@ -386,7 +387,7 @@ Press OK to start Analysis.""")
                           'categories': ['Z-Test', 1, 0, number_rows, 0]})
         worksheet.insert_chart('G2', chart)
         writer.save()
-        tk.messagebox.showinfo('File Saved','Saved as ' + (file_to_save + ".xlsx"))        
+        tk.messagebox.showinfo('File Saved','Saved as ' + (file_to_save + ".xlsx"))
     else:
         tk.messagebox.showinfo('Warning', 'Wrong File Type, Select a .bin or .csv file')
     
@@ -503,14 +504,14 @@ def bbla():  # criar função para quando o botão for clicado
     file_name = time.strftime("%Y%m%d-%H%M%S")
     while isCapturingOn:
         start_cap = int(time.time() * 1000)
-        with open(file_name + '.bin', "ab") as bin_file:  # save binary file
-            proc = subprocess.Popen("seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(selectedCombo), stdout=subprocess.PIPE, startupinfo=startupinfo)
+        with open(file_name + '_bit.bin', "ab") as bin_file:  # save binary file
+            proc = subprocess.Popen("seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(selectedCombo), stdout=subprocess.PIPE, startupinfo=startupinfo, stderr=subprocess.DEVNULL)
             chunk = proc.stdout.read()
             bin_file.write(chunk)
         bin_hex = BitArray(chunk)  # bin to hex
         bin_ascii = bin_hex.bin  # hex to ASCII
         num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
-        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+        with open(file_name + '_bit.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
         print(1 - (end_cap - start_cap)/1000)
@@ -520,22 +521,50 @@ def bbla():  # criar função para quando o botão for clicado
             pass
 
 
-def rng():  # criar função para quando o botão for clicado
-    #subprocess.call('.\RNG Capture.bat')
+def trng3():
+    global isCapturingOn
+    isCapturingOn = True
+    blocksize = 256
+    ports = dict()
+    ports_avaiable = list(list_ports.comports())
+    rng_com_port = None
+    for temp in ports_avaiable:
+        if temp[1].startswith("TrueRNG"):
+            if rng_com_port == None:  # always chooses the 1st TrueRNG found
+                rng_com_port = str(temp[0])
     file_name = time.strftime("%Y%m%d-%H%M%S")
-    is_true = 20
-    while is_true != 0:
-        is_true -= 1
-        #with open('/dev/random', "rb") as file:  # open binary file
-            #chunk = file.read(256)  # define number of bytes to read
-        list = []
-        for x in range(2048):
-            list.append(random.randint(0, 1))
-        chunk = ''.join((str(e) for e in list))
-        num_ones_array = chunk.count('1')  # count numbers of ones in the 2048 string
-        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+    while isCapturingOn:
+        start_cap = int(time.time() * 1000)
+        with open(file_name + '_true.bin', "ab") as bin_file:  # save binary file
+            try:
+                ser = serial.Serial(port=rng_com_port, timeout=10)  # timeout set at 10 seconds in case the read fails
+            except:
+                print('Port Not Usable!')
+                print('Do you have permissions set to read ' + rng_com_port + ' ?')
+            if (ser.isOpen() == False):
+                ser.open()
+            ser.setDTR(True)
+            ser.flushInput()
+            try:
+                x = ser.read(blocksize)  # read bytes from serial port
+            except:
+                print('Read Failed!!!')
+            if bin_file != 0:
+                bin_file.write(x)
+            ser.close()
+            if bin_file != 0:
+                bin_file.close()
+        bin_hex = BitArray(x)  # bin to hex
+        bin_ascii = bin_hex.bin  # hex to ASCII
+        num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
+        with open(file_name + '_true.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
-        time.sleep(1)
+        end_cap = int(time.time() * 1000)
+        print(1 - (end_cap - start_cap) / 1000)
+        try:
+            time.sleep(1 - (end_cap - start_cap) / 1000)
+        except Exception:
+            pass
 
 
 def mbbla():
@@ -544,10 +573,6 @@ def mbbla():
     selectedEntryId1 = entryMblaId1.get()
     selectedEntryId2 = entryMblaId2.get()
     subprocess.run(["./mbbla f{} f{} {} {}".format(selectedComboM1, selectedComboM2, selectedEntryId1, selectedEntryId2)], shell=True)
-    
-
-def mrng():
-    tk.messagebox.showinfo('Alert','Still under development')
 
 
 def startCollecting():  # criar função para quando o botão for clicado
@@ -558,11 +583,12 @@ def startCollecting():  # criar função para quando o botão for clicado
         if selectedColeta.get() == 1:
             threading.Thread(target=bbla).start()
         elif selectedColeta.get() == 2:
-            rng()
+            threading.Thread(target=trng3).start()
         elif selectedColeta.get() == 3:
             mbbla()
         elif selectedColeta.get() == 4:
-            mrng()
+            threading.Thread(target=bbla).start()
+            threading.Thread(target=trng3).start()
         tk.messagebox.showinfo('Alert','Capture Started, click "Stop" to finish.')      
     else:
         tk.messagebox.showinfo('Alert','Already Capturing Data...')
@@ -573,7 +599,7 @@ def stopCollecting():
     global selectedColeta
     if isCapturingOn == True:
         isCapturingOn = False
-        tk.messagebox.showinfo('File Saved','Salvo em ' + script_path + '/coletas')
+        tk.messagebox.showinfo('File Saved','Salvo em ' + script_path)
     else:
         tk.messagebox.showinfo('Alert','Capture not started')
 

@@ -659,54 +659,86 @@ lbl31i.grid(column=0, row=2, sticky="ew")  # posição do label
 
 # Funções
 
-def livePlotConf():
-    plt.rcParams["figure.figsize"] = (12, 6)
+def livebblaWin(): # Function to take live data from bitbabbler
+    global isLiveOn
+    # global file_name
+    global zscore_array
+    global index_number_array
+    isLiveOn = True
+    startupinfo = None
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    selectedComboLive = comboBLive.get()
+    file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(selectedComboLive))
+    index_number = 0
+    csv_ones = []
+    zscore_array = []
+    index_number_array = []
+    while isLiveOn:
+        start_cap = int(time.time() * 1000)
+        index_number += 1
+        with open(file_name + '.bin', "ab") as bin_file:  # save binary file
+            proc = subprocess.Popen('seedd.exe --limit-max-xfer --no-qa -f{} -b 256'.format(selectedComboLive),
+                                    stdout=subprocess.PIPE, startupinfo=startupinfo)
+            chunk = proc.stdout.read()
+            bin_file.write(chunk)
+        bin_hex = BitArray(chunk)  # bin to hex
+        bin_ascii = bin_hex.bin  # hex to ASCII
+        num_ones_array = int(bin_ascii.count('1'))  # count numbers of ones in the 2048 string
+        csv_ones.append(num_ones_array)
+        sums_csv = sum(csv_ones)
+        avrg_csv = sums_csv / index_number
+        zscore_csv = (avrg_csv - 1024) / (22.62741699796 / (index_number ** 0.5))
+        zscore_array.append(zscore_csv)
+        index_number_array.append(index_number)
+        # with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+        #    write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
+        end_cap = int(time.time() * 1000)
+        print(1 - (end_cap - start_cap) / 1000)
+        try:
+            time.sleep(1 - (end_cap - start_cap) / 1000)
+        except Exception:
+            pass
+
+
+
+def plot_show():
+    plt.rcParams["figure.figsize"] = (8, 5)
     fig = plt.figure()
     ax1 = fig.add_subplot(1,1,1)
-    global bLiveName
-    global script_path
-    global selectedLive
-    bLiveName = time.strftime("%Y%m%d-%H%M%S")
-    selectedComboLive = comboBLive.get()
-    if selectedLive.get() == 1:
-        subprocess.run(["./blive {} f{}".format(bLiveName, selectedComboLive)], shell=True)
-    elif selectedLive.get() == 2:
-        subprocess.run(["./rnglive {}".format(bLiveName)], shell=True)
     def animate(i):
-        pullData = open((script_path + "/coletas/" + bLiveName + "zscore.txt"), "r").read()
-        dataArray = pullData.split('\n')
-        xar = []
-        yar = []
-        for eachLine in dataArray:
-            if len(eachLine) > 1:
-                x, y = eachLine.split(' ')
-                xar.append(x)
-                yar.append(float(y))
+        xar = index_number_array
+        yar = zscore_array
         ax1.clear()
         ax1.grid()
-        ax1.plot(xar, yar, marker='o', color='orange')
-        ax1.tick_params(axis='x', rotation=45)
+        ax1.plot(xar, yar, color='orange')
+        # ax1.tick_params(axis='x', rotation=45)
         ax1.set_title("Live Plot")
-        ax1.set_xticks(ax1.get_xticks()[::5])
+        # ax1.set_xticks(ax1.get_xticks()[::5])
     ani = animation.FuncAnimation(fig, animate, interval=1000)
     plt.show()
 
 
 def livePlot():
-    threading.Thread(target=livePlotConf).start()
+    global selectedLive
     global isLiveOn
-    isLiveOn = True
+    if isLiveOn == True:
+        tk.messagebox.showinfo('WARNING !!! ', ' Press Stop before starting new Plot')
+        return
+    else:
+        if selectedLive.get() == 1: # start Bitbabbler live
+            threading.Thread(target=livebblaWin).start()
+            time.sleep(4)
+            threading.Thread(target=plot_show).start()
+        elif selectedLive.get() == 2: # start TrueRNG live
+            subprocess.run(["./rnglive {}".format(bLiveName)], shell=True)
+
 
 
 def stopLive():
     global isLiveOn
-    global selectedComboLive
     if isLiveOn == True:
         isLiveOn = False
-        if selectedLive.get() == 1:
-            subprocess.run(["ps -ef | awk '/blive/{print$2}' | sudo xargs kill 2>/dev/null"], shell=True)   
-        elif selectedLive.get() == 2:
-            subprocess.run(["ps -ef | awk '/rnglive/{print$2}' | sudo xargs kill 2>/dev/null"], shell=True)
         tk.messagebox.showinfo('WARNING !!! ',' Close the Graph window before acquiring new Data!!')
     else:
         tk.messagebox.showinfo('Alert','Capure not started')

@@ -497,17 +497,17 @@ def bbla():  # criar função para quando o botão for clicado
     startupinfo = None
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    file_name = time.strftime("%Y%m%d-%H%M%S")
+    file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(selectedCombo))
     while isCapturingOn:
         start_cap = int(time.time() * 1000)
-        with open(file_name + '_bit.bin', "ab") as bin_file:  # save binary file
+        with open(file_name + '.bin', "ab") as bin_file:  # save binary file
             proc = subprocess.Popen("seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(selectedCombo), stdout=subprocess.PIPE, startupinfo=startupinfo, stderr=subprocess.DEVNULL)
             chunk = proc.stdout.read()
             bin_file.write(chunk)
         bin_hex = BitArray(chunk)  # bin to hex
         bin_ascii = bin_hex.bin  # hex to ASCII
         num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
-        with open(file_name + '_bit.csv', "a+") as write_file:  # open file and append time and number of ones
+        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
         #print(1 - (end_cap - start_cap)/1000)
@@ -528,10 +528,10 @@ def trng3():
         if temp[1].startswith("TrueRNG"):
             if rng_com_port == None:  # always chooses the 1st TrueRNG found
                 rng_com_port = str(temp[0])
-    file_name = time.strftime("%Y%m%d-%H%M%S")
+    file_name = time.strftime("%Y%m%d-%H%M%S_trng")
     while isCapturingOn:
         start_cap = int(time.time() * 1000)
-        with open(file_name + '_true.bin', "ab") as bin_file:  # save binary file
+        with open(file_name + '.bin', "ab") as bin_file:  # save binary file
             try:
                 ser = serial.Serial(port=rng_com_port, timeout=10)  # timeout set at 10 seconds in case the read fails
             except:
@@ -553,7 +553,7 @@ def trng3():
         bin_hex = BitArray(x)  # bin to hex
         bin_ascii = bin_hex.bin  # hex to ASCII
         num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
-        with open(file_name + '_true.csv', "a+") as write_file:  # open file and append time and number of ones
+        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
         #print(1 - (end_cap - start_cap) / 1000)
@@ -564,11 +564,7 @@ def trng3():
 
 
 def mbbla():
-    selectedComboM1 = comboMbla1.get()
-    selectedComboM2 = comboMbla2.get()
-    selectedEntryId1 = entryMblaId1.get()
-    selectedEntryId2 = entryMblaId2.get()
-    subprocess.run(["./mbbla f{} f{} {} {}".format(selectedComboM1, selectedComboM2, selectedEntryId1, selectedEntryId2)], shell=True)
+    tk.messagebox.showinfo('Alert', 'Stil under development')
 
 
 def startCollecting():  # criar função para quando o botão for clicado
@@ -716,7 +712,7 @@ def plot_show():
         # ax1.tick_params(axis='x', rotation=45)
         ax1.set_title("Live Plot")
         # ax1.set_xticks(ax1.get_xticks()[::5])
-    ani = animation.FuncAnimation(fig, animate, interval=2)
+    ani = animation.FuncAnimation(fig, animate, interval=200)
     plt.show()
 
 
@@ -729,11 +725,11 @@ def livePlot():
     else:
         if selectedLive.get() == 1: # start Bitbabbler live
             threading.Thread(target=livebblaWin).start()
-            time.sleep(4)
+            #time.sleep(4)
             threading.Thread(target=plot_show).start()
         elif selectedLive.get() == 2: # start TrueRNG live
-            subprocess.run(["./rnglive {}".format(bLiveName)], shell=True)
-
+            #subprocess.run(["./rnglive {}".format(bLiveName)], shell=True)
+            return
 
 
 def stopLive():

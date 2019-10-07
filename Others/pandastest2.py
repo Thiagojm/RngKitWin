@@ -1,3 +1,11 @@
+import pandas as pd
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import ttk
+import tkinter.messagebox
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import os
 import time
 from time import localtime, strftime
 import subprocess
@@ -7,12 +15,13 @@ from bitstring import BitArray
 from textwrap import wrap
 import serial
 from serial.tools import list_ports
-import csv
 
 
 def livebblaWin():
     global is_bblaWin_on
     global file_name
+    global zscore_csv
+    global index_number
     is_bblaWin_on = True
     startupinfo = None
     startupinfo = subprocess.STARTUPINFO()
@@ -42,31 +51,17 @@ def livebblaWin():
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {} {} {}\n'.format(index_number, strftime("%H:%M:%S", localtime()), num_ones_array, zscore_csv))
 
-livebblaWin()
+threading.Thread(target=livebblaWin).start()
 
 def livePlotConf():
-    plt.rcParams["figure.figsize"] = (12, 6)
+    plt.rcParams["figure.figsize"] = (6, 3)
     fig = plt.figure()
     ax1 = fig.add_subplot(1,1,1)
-    global bLiveName
-    global script_path
-    global selectedLive
-    bLiveName = time.strftime("%Y%m%d-%H%M%S")
-    selectedComboLive = comboBLive.get()
-    if selectedLive.get() == 1:
-        subprocess.run(["./blive {} f{}".format(bLiveName, selectedComboLive)], shell=True)
-    elif selectedLive.get() == 2:
-        subprocess.run(["./rnglive {}".format(bLiveName)], shell=True)
+    #global zscore_csv
+    #global index_number
     def animate(i):
-        pullData = open((script_path + "/coletas/" + bLiveName + "zscore.txt"), "r").read()
-        dataArray = pullData.split('\n')
-        xar = []
-        yar = []
-        for eachLine in dataArray:
-            if len(eachLine) > 1:
-                x, y = eachLine.split(' ')
-                xar.append(x)
-                yar.append(float(y))
+        xar = index_number
+        yar = zscore_csv
         ax1.clear()
         ax1.grid()
         ax1.plot(xar, yar, marker='o', color='orange')
@@ -75,3 +70,5 @@ def livePlotConf():
         ax1.set_xticks(ax1.get_xticks()[::5])
     ani = animation.FuncAnimation(fig, animate, interval=1000)
     plt.show()
+
+livePlotConf()

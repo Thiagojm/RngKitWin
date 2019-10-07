@@ -37,7 +37,7 @@ def bblaWin():
             bin_file.write(chunk)
         bin_hex = BitArray(chunk) # bin to hex
         bin_ascii = bin_hex.bin #hex to ASCII
-        num_ones_array = bin_ascii.count('1') # count numbers of ones in the 2048 string
+        num_ones_array = int(bin_ascii.count('1')) # count numbers of ones in the 2048 string
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {} {}\n'.format(index_number, strftime("%H:%M:%S", localtime()), num_ones_array))
         with open(file_name + '.csv') as csvfile:
@@ -54,7 +54,8 @@ def bblaWin():
             print(sums_csv)
             avrg_csv = sums_csv / index_number
             print(avrg_csv)
-
+            zscore_csv = (avrg_csv - 1024) / (22.62741699796 / (index_number ** 0.5))
+            print(zscore_csv)
 
 
 

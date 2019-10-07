@@ -3,7 +3,9 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 import tkinter.messagebox
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg')
+from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import os
 import time
@@ -51,8 +53,8 @@ def livebblaWin():
         #print(zscore_csv)
         zscore_array.append(zscore_csv)
         index_number_array.append(index_number)
-        #with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
-        #    write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
+        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+            write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
         print(1 - (end_cap - start_cap)/1000)
         try:

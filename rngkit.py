@@ -7,7 +7,9 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 import tkinter.messagebox
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg')
+from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import os
 import time
@@ -638,7 +640,7 @@ radTrngLive.grid(column=0, row=2, sticky="ewns")
 # Combobox - bbla
 selectedComboLive = tk.StringVar()
 comboBLive = tk.ttk.Combobox(frameTab32, width=3)
-comboBLive['values']= (0, 1, 2, 3, 4)
+comboBLive['values']= (0, 1)
 comboBLive.current(0)
 comboBLive.grid(column=0, row=1)
 
@@ -665,7 +667,6 @@ def livebblaWin(): # Function to take live data from bitbabbler
     global zscore_array
     global index_number_array
     isLiveOn = True
-    startupinfo = None
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     selectedComboLive = comboBLive.get()
@@ -691,10 +692,10 @@ def livebblaWin(): # Function to take live data from bitbabbler
         zscore_csv = (avrg_csv - 1024) / (22.62741699796 / (index_number ** 0.5))
         zscore_array.append(zscore_csv)
         index_number_array.append(index_number)
-        # with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
-        #    write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
+        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+            write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        print(1 - (end_cap - start_cap) / 1000)
+        #print(1 - (end_cap - start_cap) / 1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:
@@ -715,7 +716,7 @@ def plot_show():
         # ax1.tick_params(axis='x', rotation=45)
         ax1.set_title("Live Plot")
         # ax1.set_xticks(ax1.get_xticks()[::5])
-    ani = animation.FuncAnimation(fig, animate, interval=1000)
+    ani = animation.FuncAnimation(fig, animate, interval=2)
     plt.show()
 
 

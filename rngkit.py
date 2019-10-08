@@ -834,6 +834,11 @@ labelGraph.grid(row = 0, column = 0, sticky="wens")
 # Confirma saída do programa e fecha de vez
 def confirmExit():
     if tk.messagebox.askokcancel('Quit', 'Are you sure you want to exit?'):
+        global isLiveOn
+        global isCapturingOn
+        isLiveOn = False
+        isCapturingOn = False
+        time.sleep(1)
         window.destroy()
 
 

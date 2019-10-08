@@ -7,8 +7,6 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 import tkinter.messagebox
-import matplotlib
-matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 import os
@@ -578,6 +576,8 @@ def startCollecting():  # criar função para quando o botão for clicado
             threading.Thread(target=trng3).start()
         elif selectedColeta.get() == 3:
             mbbla()
+            isCapturingOn = False
+            return
         elif selectedColeta.get() == 4:
             threading.Thread(target=bbla).start()
             threading.Thread(target=trng3).start()
@@ -659,7 +659,6 @@ lbl31i.grid(column=0, row=2, sticky="ew")  # posição do label
 
 def livebblaWin(): # Function to take live data from bitbabbler
     global isLiveOn
-    # global file_name
     global zscore_array
     global index_number_array
     isLiveOn = True
@@ -674,11 +673,81 @@ def livebblaWin(): # Function to take live data from bitbabbler
     while isLiveOn:
         start_cap = int(time.time() * 1000)
         index_number += 1
-        with open(file_name + '.bin', "ab") as bin_file:  # save binary file
-            proc = subprocess.Popen('seedd.exe --limit-max-xfer --no-qa -f{} -b 256'.format(selectedComboLive),
-                                    stdout=subprocess.PIPE, startupinfo=startupinfo)
+        with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
+            proc = subprocess.Popen('seedd.exe --limit-max-xfer --no-qa -f{} -b 256'.format(selectedComboLive), stdout=subprocess.PIPE, startupinfo=startupinfo)
             chunk = proc.stdout.read()
             bin_file.write(chunk)
+        bin_hex = BitArray(chunk)  # bin to hex
+        bin_ascii = bin_hex.bin  # hex to ASCII
+        if not bin_ascii:
+            isLiveOn = False
+            tk.messagebox.showinfo('WARNING !!! ', 'Something went wrong, is the device attached? Attach it and restart the program!!!')
+            break
+        num_ones_array = int(bin_ascii.count('1'))  # count numbers of ones in the 2048 string
+        csv_ones.append(num_ones_array)
+        sums_csv = sum(csv_ones)
+        avrg_csv = sums_csv / index_number
+        zscore_csv = (avrg_csv - 1024) / (22.62741699796 / (index_number ** 0.5))
+        zscore_array.append(zscore_csv)
+        index_number_array.append(index_number)
+        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+            write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
+        end_cap = int(time.time() * 1000)
+        #print(1 - (end_cap - start_cap) / 1000)
+        try:
+            time.sleep(1 - (end_cap - start_cap) / 1000)
+        except Exception:
+            pass
+
+
+def trng3live():
+    global isLiveOn
+    global zscore_array
+    global index_number_array
+    isLiveOn = True
+    file_name = time.strftime("%Y%m%d-%H%M%S_trng")
+    index_number = 0
+    csv_ones = []
+    zscore_array = []
+    index_number_array = []
+    blocksize = 256
+    ports_avaiable = list(list_ports.comports())
+    rng_com_port = None
+    # Loop on all available ports to find TrueRNG
+    for temp in ports_avaiable:
+        if temp[1].startswith("TrueRNG"):
+            if rng_com_port == None:  # always chooses the 1st TrueRNG found
+                rng_com_port = str(temp[0])
+    while isLiveOn:
+        start_cap = int(time.time() * 1000)
+        index_number += 1
+        with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
+            try:
+                ser = serial.Serial(port=rng_com_port, timeout=10)  # timeout set at 10 seconds in case the read fails
+            except:
+                print('Port Not Usable!')
+                print('Do you have permissions set to read ' + rng_com_port + ' ?')
+            # Open the serial port if it isn't open
+            if (ser.isOpen() == False):
+                try:
+                    ser.open()
+                except:
+                    isLiveOn = False
+                    tk.messagebox.showinfo('WARNING !!! ', 'Something went wrong, is the device attached? Attach it and restart the program!!!')
+                    return
+            # Set Data Terminal Ready to start flow
+            ser.setDTR(True)
+            # This clears the receive buffer so we aren't using buffered data
+            ser.flushInput()
+            try:
+                chunk = ser.read(blocksize)  # read bytes from serial port
+            except:
+                print('Read Failed!!!')
+                # If we were able to open the file, write to disk
+            if bin_file != 0:
+                bin_file.write(chunk)
+            # Close the serial port
+            ser.close()
         bin_hex = BitArray(chunk)  # bin to hex
         bin_ascii = bin_hex.bin  # hex to ASCII
         num_ones_array = int(bin_ascii.count('1'))  # count numbers of ones in the 2048 string
@@ -703,6 +772,7 @@ def plot_show():
     plt.rcParams["figure.figsize"] = (8, 5)
     fig = plt.figure()
     ax1 = fig.add_subplot(1,1,1)
+    global ani
     def animate(i):
         xar = index_number_array
         yar = zscore_array
@@ -725,18 +795,18 @@ def livePlot():
     else:
         if selectedLive.get() == 1: # start Bitbabbler live
             threading.Thread(target=livebblaWin).start()
-            #time.sleep(4)
             threading.Thread(target=plot_show).start()
         elif selectedLive.get() == 2: # start TrueRNG live
-            #subprocess.run(["./rnglive {}".format(bLiveName)], shell=True)
-            return
+            threading.Thread(target=trng3live).start()
+            threading.Thread(target=plot_show).start()
 
 
 def stopLive():
     global isLiveOn
     if isLiveOn == True:
         isLiveOn = False
-        tk.messagebox.showinfo('WARNING !!! ',' Close the Graph window before acquiring new Data!!')
+        ani.event_source.stop()
+        tk.messagebox.showinfo('WARNING !!! ',"Please restart the program before trying new Live Plot or it may crash!")
     else:
         tk.messagebox.showinfo('Alert','Capure not started')
 

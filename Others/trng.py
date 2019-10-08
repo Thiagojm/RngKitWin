@@ -18,9 +18,6 @@ def trng3():
     # Size of block for each loop
     blocksize = 256
 
-    # Create ports variable as dictionary
-    ports = dict()
-
     # Call list_ports to get com port info
     ports_avaiable = list(list_ports.comports())
 

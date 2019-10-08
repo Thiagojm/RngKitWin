@@ -131,21 +131,20 @@ class PageThree(tk.Frame):
         label = tk.Label(self, text="Live Plot", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        button1 = ttk.Button(self, text="Back to Home",
-                             command=lambda: controller.show_frame(StartPage))
-        button1.pack()
+        frame1 = tk.Frame(self, relief="raised", borderwidth=1)
+        frame1.pack(fill="x")
 
         # Radiobuttons
         selectedLive = tk.IntVar()
         selectedLive.set(1)
-        radBlive = tk.ttk.Radiobutton(self, text='Bitbabbler', value=1, variable=selectedLive)
+        radBlive = tk.ttk.Radiobutton(frame1, text='Bitbabbler', value=1, variable=selectedLive)
         radBlive.pack(side=tk.TOP)
         selectedComboLive = tk.StringVar()
-        comboBLive = ttk.Combobox(self, width=3)
+        comboBLive = ttk.Combobox(frame1, width=3)
         comboBLive['values'] = (0, 1)
         comboBLive.current(0)
         comboBLive.pack(side=tk.TOP)
-        radTrngLive = tk.ttk.Radiobutton(self, text='TrueRng', value=2, variable=selectedLive)
+        radTrngLive = tk.ttk.Radiobutton(frame1, text='TrueRng', value=2, variable=selectedLive)
         radTrngLive.pack()
 
         # Canvas

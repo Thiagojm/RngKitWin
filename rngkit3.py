@@ -44,6 +44,8 @@ def animate(i):
     a.clear()
     a.plot(xar, yar, color='orange')
     a.set_title("Live Plot")
+    a.set_xlabel('Time(s)', fontsize=10)
+    a.set_ylabel('Z-Score', fontsize='medium')
 
 
 # Parametros tkinter
@@ -810,13 +812,13 @@ def stopLive():
 # Buttons
 btn31 = tk.Button(frameTab34, text="Live Plot", bg="white", fg="blue",
                   command=livePlot,
-                  padx=5, pady=5)  # criar botão/ command=função do botão
-btn31.grid(column=0, row=0, sticky="nsew")  # posição do botão
+                  padx=6, pady=6)  # criar botão/ command=função do botão
+btn31.grid(column=2, row=0, sticky="ew")  # posição do botão
 
 btn32 = tk.Button(frameTab34, text="Stop", bg="white", fg="blue",
                   command=stopLive,
-                  padx=5, pady=5)  # criar botão/ command=função do botão
-btn32.grid(column=0, row=1, sticky="nsew")  # posição do botão
+                  padx=6, pady=6)  # criar botão/ command=função do botão
+btn32.grid(column=2, row=1, sticky="ew")  # posição do botão
 
 
 

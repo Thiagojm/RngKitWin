@@ -1,4 +1,4 @@
-# RngKit
+# RngKit 1.0
 Thiagojm  
 tjm.plastica@gmail.com    
 Written in Python 3.7.4  

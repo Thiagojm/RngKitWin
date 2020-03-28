@@ -130,9 +130,9 @@ def Ztesta():
         ztest['Sum'] = ztest['Ones'].cumsum()
         ztest['Average'] = ztest['Sum'] / (ztest['index'])
         ztest['Zscore'] = (ztest['Average'] - 1024) / (22.62741699796 / (ztest['index'] ** 0.5))
-        file_to_save = data_file.replace(".csv", ".xlsx")
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".csv", "")
+        file_to_save = f'1-SavedFiles/{os.path.basename(data_file).replace(".csv", ".xlsx")}'
         number_rows = len(ztest.index)
         writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
         ztest.to_excel(writer, sheet_name='Z-Test', index=False)
@@ -199,9 +199,9 @@ Press OK to start Analysis.""")
         binSheet['Average'] = binSheet['Sum'] / (binSheet['Time'])
         binSheet['Zscore'] = (binSheet['Average'] - 1024) / (22.62741699796 / (binSheet['Time'] ** 0.5))
 
-        file_to_save = data_file.replace(".bin", ".xlsx")
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".csv", "")
+        file_to_save = f'1-SavedFiles/{os.path.basename(data_file).replace(".bin", ".xlsx")}'
         number_rows = len(binSheet.Time)
         writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
         binSheet.to_excel(writer, sheet_name='Z-Test', index=False)
@@ -274,7 +274,7 @@ def Ztest():
         ztest['Zscore'] = (ztest['Average'] - 1024) / (22.62741699796 / (ztest['index'] ** 0.5))
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".csv", "")
-        file_to_save = filedialog.asksaveasfilename(initialdir=script_path,
+        file_to_save = filedialog.asksaveasfilename(initialdir=f"{script_path}/1-SavedFiles",
                                                     initialfile=data_file2,
                                                     title="Select file",
                                                     filetypes=(("XLSX Files", '*.xlsx'), ("all files", "*.*")))
@@ -328,7 +328,7 @@ def Ztest():
     elif data_file[-3:] == "bin":
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".bin", "")
-        file_to_save = filedialog.asksaveasfilename(initialdir=script_path,
+        file_to_save = filedialog.asksaveasfilename(initialdir=f"{script_path}/1-SavedFiles",
                                                     initialfile=data_file2,
                                                     title="Select file",
                                                     filetypes=(("XLSX Files", '*.xlsx'), ("all files", "*.*")))

@@ -24,6 +24,9 @@ from textwrap import wrap
 import serial
 from serial.tools import list_ports
 
+
+
+print("Starting RngKitWin")
 LARGE_FONT = ("Verdana", 12)
 style.use("ggplot")
 

@@ -130,9 +130,9 @@ def Ztesta():
         ztest['Sum'] = ztest['Ones'].cumsum()
         ztest['Average'] = ztest['Sum'] / (ztest['index'])
         ztest['Zscore'] = (ztest['Average'] - 1024) / (22.62741699796 / (ztest['index'] ** 0.5))
-        file_to_save = data_file.replace(".csv", ".xlsx")
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".csv", "")
+        file_to_save = f'1-SavedFiles/{os.path.basename(data_file).replace(".csv", ".xlsx")}'
         number_rows = len(ztest.index)
         writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
         ztest.to_excel(writer, sheet_name='Z-Test', index=False)
@@ -199,9 +199,9 @@ Press OK to start Analysis.""")
         binSheet['Average'] = binSheet['Sum'] / (binSheet['Time'])
         binSheet['Zscore'] = (binSheet['Average'] - 1024) / (22.62741699796 / (binSheet['Time'] ** 0.5))
 
-        file_to_save = data_file.replace(".bin", ".xlsx")
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".csv", "")
+        file_to_save = f'1-SavedFiles/{os.path.basename(data_file).replace(".bin", ".xlsx")}'
         number_rows = len(binSheet.Time)
         writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
         binSheet.to_excel(writer, sheet_name='Z-Test', index=False)
@@ -274,7 +274,7 @@ def Ztest():
         ztest['Zscore'] = (ztest['Average'] - 1024) / (22.62741699796 / (ztest['index'] ** 0.5))
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".csv", "")
-        file_to_save = filedialog.asksaveasfilename(initialdir=script_path,
+        file_to_save = filedialog.asksaveasfilename(initialdir=f"{script_path}/1-SavedFiles",
                                                     initialfile=data_file2,
                                                     title="Select file",
                                                     filetypes=(("XLSX Files", '*.xlsx'), ("all files", "*.*")))
@@ -328,7 +328,7 @@ def Ztest():
     elif data_file[-3:] == "bin":
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".bin", "")
-        file_to_save = filedialog.asksaveasfilename(initialdir=script_path,
+        file_to_save = filedialog.asksaveasfilename(initialdir=f"{script_path}/1-SavedFiles",
                                                     initialfile=data_file2,
                                                     title="Select file",
                                                     filetypes=(("XLSX Files", '*.xlsx'), ("all files", "*.*")))
@@ -515,6 +515,7 @@ def bbla():  # criar função para quando o botão for clicado
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(selectedCombo))
+    file_name = f"1-SavedFiles/{file_name}"
     while isCapturingOn:
         start_cap = int(time.time() * 1000)
         with open(file_name + '.bin', "ab") as bin_file:  # save binary file
@@ -547,6 +548,7 @@ def trng3():
             if rng_com_port == None:  # always chooses the 1st TrueRNG found
                 rng_com_port = str(temp[0])
     file_name = time.strftime("%Y%m%d-%H%M%S_trng")
+    file_name = f"1-SavedFiles/{file_name}"
     while isCapturingOn:
         start_cap = int(time.time() * 1000)
         with open(file_name + '.bin', "ab") as bin_file:  # save binary file
@@ -611,7 +613,7 @@ def stopCollecting():
     global selectedColeta
     if isCapturingOn == True:
         isCapturingOn = False
-        tk.messagebox.showinfo('File Saved', 'Salvo em ' + script_path)
+        tk.messagebox.showinfo('File Saved', 'Salvo em ' + f"{script_path}/1-SavedFiles")
     else:
         tk.messagebox.showinfo('Alert', 'Capture not started')
 
@@ -681,6 +683,7 @@ def livebblaWin():  # Function to take live data from bitbabbler
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     selectedComboLive = comboBLive.get()
     file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(selectedComboLive))
+    file_name = f"1-SavedFiles/{file_name}"
     index_number = 0
     csv_ones = []
     zscore_array = []
@@ -723,6 +726,7 @@ def trng3live():
     global index_number_array
     isLiveOn = True
     file_name = time.strftime("%Y%m%d-%H%M%S_trng")
+    file_name = f"1-SavedFiles/{file_name}"
     index_number = 0
     csv_ones = []
     zscore_array = []
@@ -804,7 +808,7 @@ def stopLive():
     if isLiveOn == True:
         isLiveOn = False
         # ani.event_source.stop()
-        tk.messagebox.showinfo('File Saved', 'Saved')
+        tk.messagebox.showinfo('File Saved', 'Saved in 1-SavedFiles')
     else:
         tk.messagebox.showinfo('Alert', 'Capure not started')
 
@@ -845,5 +849,3 @@ window.protocol('WM_DELETE_WINDOW', confirmExit)
 # need loop to maintain it open - Abre o tkinter e mantem em loop
 tab_control.pack(expand=1, fill='both')
 window.mainloop()
-
-

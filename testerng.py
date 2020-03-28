@@ -515,6 +515,7 @@ def bbla():  # criar função para quando o botão for clicado
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(selectedCombo))
+    file_name = f"1-SavedFiles/{file_name}"
     while isCapturingOn:
         start_cap = int(time.time() * 1000)
         with open(file_name + '.bin', "ab") as bin_file:  # save binary file
@@ -547,6 +548,7 @@ def trng3():
             if rng_com_port == None:  # always chooses the 1st TrueRNG found
                 rng_com_port = str(temp[0])
     file_name = time.strftime("%Y%m%d-%H%M%S_trng")
+    file_name = f"1-SavedFiles/{file_name}"
     while isCapturingOn:
         start_cap = int(time.time() * 1000)
         with open(file_name + '.bin', "ab") as bin_file:  # save binary file
@@ -611,7 +613,7 @@ def stopCollecting():
     global selectedColeta
     if isCapturingOn == True:
         isCapturingOn = False
-        tk.messagebox.showinfo('File Saved', 'Salvo em ' + script_path)
+        tk.messagebox.showinfo('File Saved', 'Salvo em ' + f"{script_path}/1-SavedFiles")
     else:
         tk.messagebox.showinfo('Alert', 'Capture not started')
 
@@ -681,6 +683,7 @@ def livebblaWin():  # Function to take live data from bitbabbler
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     selectedComboLive = comboBLive.get()
     file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(selectedComboLive))
+    file_name = f"1-SavedFiles/{file_name}"
     index_number = 0
     csv_ones = []
     zscore_array = []
@@ -723,6 +726,7 @@ def trng3live():
     global index_number_array
     isLiveOn = True
     file_name = time.strftime("%Y%m%d-%H%M%S_trng")
+    file_name = f"1-SavedFiles/{file_name}"
     index_number = 0
     csv_ones = []
     zscore_array = []
@@ -804,7 +808,7 @@ def stopLive():
     if isLiveOn == True:
         isLiveOn = False
         # ani.event_source.stop()
-        tk.messagebox.showinfo('File Saved', 'Saved')
+        tk.messagebox.showinfo('File Saved', 'Saved in 1-SavedFiles')
     else:
         tk.messagebox.showinfo('Alert', 'Capure not started')
 

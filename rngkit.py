@@ -499,7 +499,7 @@ lbl22ii.grid(column=0, row=2, sticky="ew")  # posição do label
 
 # Imagem
 
-matrix = Image.open("matrix.jpg")
+matrix = Image.open("datafiles/matrix.jpg")
 matrix = matrix.resize((200, 140), Image.ANTIALIAS)
 matrixjov = ImageTk.PhotoImage(matrix)
 labelmatrix = tk.Label(frameTab25, image=matrixjov)
@@ -519,7 +519,7 @@ def bbla():  # criar função para quando o botão for clicado
     while isCapturingOn:
         start_cap = int(time.time() * 1000)
         with open(file_name + '.bin', "ab") as bin_file:  # save binary file
-            proc = subprocess.Popen("seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(selectedCombo),
+            proc = subprocess.Popen("datafiles/seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(selectedCombo),
                                     stdout=subprocess.PIPE, startupinfo=startupinfo, stderr=subprocess.DEVNULL)
             chunk = proc.stdout.read()
             bin_file.write(chunk)
@@ -692,7 +692,7 @@ def livebblaWin():  # Function to take live data from bitbabbler
         start_cap = int(time.time() * 1000)
         index_number += 1
         with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
-            proc = subprocess.Popen('seedd.exe --limit-max-xfer --no-qa -f{} -b 256'.format(selectedComboLive),
+            proc = subprocess.Popen('datafiles/seedd.exe --limit-max-xfer --no-qa -f{} -b 256'.format(selectedComboLive),
                                     stdout=subprocess.PIPE, startupinfo=startupinfo)
             chunk = proc.stdout.read()
             bin_file.write(chunk)
@@ -849,3 +849,5 @@ window.protocol('WM_DELETE_WINDOW', confirmExit)
 # need loop to maintain it open - Abre o tkinter e mantem em loop
 tab_control.pack(expand=1, fill='both')
 window.mainloop()
+
+

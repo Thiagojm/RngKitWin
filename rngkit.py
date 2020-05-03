@@ -135,7 +135,7 @@ def Ztesta():
         ztest['Zscore'] = (ztest['Average'] - 1024) / (22.62741699796 / (ztest['index'] ** 0.5))
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".csv", "")
-        file_to_save = f'1-SavedFiles/{os.path.basename(data_file).replace(".csv", ".xlsx")}'
+        file_to_save = data_file.replace(".csv", ".xlsx")
         number_rows = len(ztest.index)
         writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
         ztest.to_excel(writer, sheet_name='Z-Test', index=False)
@@ -203,8 +203,8 @@ Press OK to start Analysis.""")
         binSheet['Zscore'] = (binSheet['Average'] - 1024) / (22.62741699796 / (binSheet['Time'] ** 0.5))
 
         data_file2 = os.path.basename(data_file)
-        data_file2 = data_file2.replace(".csv", "")
-        file_to_save = f'1-SavedFiles/{os.path.basename(data_file).replace(".bin", ".xlsx")}'
+        data_file2 = data_file2.replace(".bin", "")
+        file_to_save = data_file.replace(".bin", ".xlsx")
         number_rows = len(binSheet.Time)
         writer = pd.ExcelWriter(file_to_save, engine='xlsxwriter')
         binSheet.to_excel(writer, sheet_name='Z-Test', index=False)

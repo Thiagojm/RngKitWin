@@ -35,7 +35,7 @@ def main():
     canvas_elem = window['-CANVAS-']
     canvas2 = window['-CANVAS2-']
     canvas = canvas_elem.TKCanvas
-    # draw the intitial scatter plot
+    # draw the intitial plot
     style.use("ggplot")
     fig, ax = plt.subplots()
     fig_agg = draw_figure(canvas, fig)

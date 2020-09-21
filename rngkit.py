@@ -596,16 +596,16 @@ def startCollecting():  # criar função para quando o botão for clicado
     if isCapturingOn == False:
         isCapturingOn = True
         if selectedColeta.get() == 1:
-            threading.Thread(target=bbla).start()
+            threading.Thread(target=bbla, daemon=True).start()
         elif selectedColeta.get() == 2:
-            threading.Thread(target=trng3).start()
+            threading.Thread(target=trng3, daemon=True).start()
         elif selectedColeta.get() == 3:
             mbbla()
             isCapturingOn = False
             return
         elif selectedColeta.get() == 4:
-            threading.Thread(target=bbla).start()
-            threading.Thread(target=trng3).start()
+            threading.Thread(target=bbla, daemon=True).start()
+            threading.Thread(target=trng3, daemon=True).start()
         tk.messagebox.showinfo('Alert', 'Capture Started, click "Stop" to finish.')
     else:
         tk.messagebox.showinfo('Alert', 'Already Capturing Data...')
@@ -801,9 +801,9 @@ def livePlot():
         return
     else:
         if selectedLive.get() == 1:  # start Bitbabbler live
-            threading.Thread(target=livebblaWin).start()
+            threading.Thread(target=livebblaWin, daemon=True).start()
         elif selectedLive.get() == 2:  # start TrueRNG live
-            threading.Thread(target=trng3live).start()
+            threading.Thread(target=trng3live, daemon=True).start()
 
 
 def stopLive():
@@ -813,7 +813,7 @@ def stopLive():
         # ani.event_source.stop()
         tk.messagebox.showinfo('File Saved', 'Saved in 1-SavedFiles')
     else:
-        tk.messagebox.showinfo('Alert', 'Capure not started')
+        tk.messagebox.showinfo('Alert', 'Capture not started')
 
 
 # Buttons

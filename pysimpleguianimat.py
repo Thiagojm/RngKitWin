@@ -27,7 +27,7 @@ def main():
               [sg.Canvas(size=(640, 480), key='-CANVAS-')],
               [sg.Canvas(key='-CANVAS2-')],
               [sg.Button('Exit', size=(10, 2), pad=((280, 0), 3), font='Helvetica 14')],
-              [sg.Button('Start/ Stop', size=(10, 2), pad=((280, 0), 3), font='Helvetica 14')]]
+              [sg.Button('Start', key="live_plot", size=(10, 2), pad=((280, 0), 3), font='Helvetica 14')]]
 
     # create the form and show it without the plot
     window = sg.Window('Demo Application - Embedding Matplotlib In PySimpleGUI', layout, finalize=True)
@@ -45,17 +45,17 @@ def main():
 
     while True:
         event, values = window.read(timeout=10)
-        if event in ('Exit', None):
-            exit(69)
-
-        if event == 'Start/ Stop':
+        if event in ("Exit", sg.WIN_CLOSED):  # always,  always give a way out!
+            break
+        elif event == 'live_plot':
             global thread
             if not thread:
                 thread = True
                 threading.Thread(target=increase, args=(index_number_array, zscore_array), daemon=True).start()
+                window['live_plot'].update("Stop")
             else:
                 thread = False
-
+                window['live_plot'].update("Start")
 
         #ax.cla()
         #ax.clear()

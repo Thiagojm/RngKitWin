@@ -16,6 +16,11 @@ import rng_module as rm
 global thread
 thread = False
 
+def live_plot(index_number_array, zscore_array):
+    while thread:
+        rm.increase(index_number_array, zscore_array)
+
+
 def main():
     # Mensagem para versão console
     print("""Welcome!
@@ -60,7 +65,7 @@ Do not close this window!""")
                    [sg.Column(coluna_1_tab_1), sg.Column(coluna_2_tab_1)]]
 
     # TAB 2 - Gráfico
-    graph_options = [[sg.Canvas(key='-CANVAS2-')]]
+    graph_options = [[sg.B("Start", k='live_plot')]]
 
     live_graph = [[sg.Canvas(key='-CANVAS-')]]
 
@@ -101,6 +106,15 @@ Do not close this window!""")
         event, values = window.read(timeout=200)
         if event == sg.WIN_CLOSED:  # always,  always give a way out!
             break
+        elif event == 'live_plot':
+            global thread
+            if not thread:
+                thread = True
+                threading.Thread(target=live_plot, args=(index_number_array, zscore_array), daemon=True).start()
+                window['live_plot'].update("Stop")
+            else:
+                thread = False
+                window['live_plot'].update("Start")
         # Live Plot on Loop
         ax.plot(index_number_array, zscore_array, color='orange')
         ax.set_title("Live Plot")

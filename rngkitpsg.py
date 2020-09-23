@@ -12,13 +12,15 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 # Internal imports
 import rng_module as rm
 
-
 global thread
 thread = False
 
-def live_plot(index_number_array, zscore_array):
-    while thread:
-        rm.increase(index_number_array, zscore_array)
+
+def live_plot(index_number_array, zscore_array, event, values):
+    # while thread:
+    #     rm.increase(index_number_array, zscore_array)
+    print(event)
+    print(values)
 
 
 def main():
@@ -65,29 +67,30 @@ Do not close this window!""")
                    [sg.Column(coluna_1_tab_1), sg.Column(coluna_2_tab_1)]]
 
     # TAB 2 - Gráfico
-    graph_options = [[sg.B("Start", k='live_plot')]]
+    graph_options = [[sg.T("Choose RNG", size=(20, 1)), sg.T("RAW/XOR", size=(20, 1))],
+                     [sg.Radio('BitBabbler', "radio_graph", k="bit_live", default=True, size=(18, 1)),
+                      sg.InputCombo((0, 1), default_value=0, size=(4, 1), k="live_combo", enable_events=False,
+                                    readonly=True), sg.T("", size=(2,1)), sg.B("Start", k='live_plot', size=(20, 1))],
+                     [sg.Radio('TrueRNG3', "radio_graph", k="true3_live", size=(20, 1))]]
 
     live_graph = [[sg.Canvas(key='-CANVAS-')]]
-
 
     tab2_layout = [[sg.Frame("Options", layout=graph_options, k="graph_options", size=(90, 9))],
                    [sg.Frame("Live Plot", layout=live_graph, k="graph", size=(90, 9))]]
 
-
     # TAB 3 - Instruções
-    tab3_layout = [[sg.T("Instructions", relief="raised", justification="center", size=(70, 1), font=("Calibri, 24"))], [
-        sg.Multiline(default_text="texto", size=(75, 19), disabled=True, enable_events=False, font=("Calibri, 20"),
-                     pad=(5, 5))]]
+    tab3_layout = [[sg.T("Instructions", relief="raised", justification="center", size=(70, 1), font=("Calibri, 24"))],
+                   [sg.Multiline(default_text="texto", size=(75, 19), disabled=True, enable_events=False,
+                                 font=("Calibri, 20"), pad=(5, 5))]]
 
     # LAYOUT
-    layout = [[sg.TabGroup([[sg.Tab('Start', tab1_layout), sg.Tab('Live Plot', tab2_layout),
-                             sg.Tab('Instructions', tab3_layout)]], tab_location="top",
-                           font="Calibri, 18")]]
+    layout = [[sg.TabGroup(
+        [[sg.Tab('Start', tab1_layout), sg.Tab('Live Plot', tab2_layout), sg.Tab('Instructions', tab3_layout)]],
+        tab_location="top", font="Calibri, 18")]]
 
     # WINDOW
-    window = sg.Window("RngKit ver 2.0.0 - by Thiago Jung", layout, size=(1024, 720), location=(50, 50),
-                       finalize=True, element_justification="center", font="Calibri 18", resizable=True,
-                       icon=("src/BitB.ico"))
+    window = sg.Window("RngKit ver 2.0.0 - by Thiago Jung", layout, size=(1024, 720), location=(50, 50), finalize=True,
+                       element_justification="center", font="Calibri 18", resizable=True, icon=("src/BitB.ico"))
 
     # Setting things up!
     canvas_elem = window['-CANVAS-']
@@ -99,8 +102,6 @@ Do not close this window!""")
     index_number_array = [1, 2, 3, 4]
     zscore_array = [3, 2, 1, 0]
 
-
-
     # LOOP
     while True:
         event, values = window.read(timeout=200)
@@ -110,7 +111,8 @@ Do not close this window!""")
             global thread
             if not thread:
                 thread = True
-                threading.Thread(target=live_plot, args=(index_number_array, zscore_array), daemon=True).start()
+                threading.Thread(target=live_plot, args=(index_number_array, zscore_array, event, values),
+                                 daemon=True).start()
                 window['live_plot'].update("Stop")
             else:
                 thread = False

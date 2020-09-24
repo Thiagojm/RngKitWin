@@ -35,11 +35,11 @@ a = f.add_subplot(111)
 index_number_array = []
 zscore_array = []
 global script_path
-global isLiveOn
+global thread
 global selectedLive
 script_path = os.getcwd()
 isCapturingOn = False
-isLiveOn = False
+thread = False
 
 def animate(i):
     xar = index_number_array
@@ -678,7 +678,7 @@ lbl31.grid(column=0, row=0, sticky="ew")  # posição do label
 
 # Funções
 def livebblaWin():  # Function to take live data from bitbabbler
-    global isLiveOn
+    global thread
     global zscore_array
     global index_number_array
     isLiveOn = True
@@ -724,7 +724,7 @@ def livebblaWin():  # Function to take live data from bitbabbler
 
 
 def trng3live():
-    global isLiveOn
+    global thread
     global zscore_array
     global index_number_array
     isLiveOn = True
@@ -795,7 +795,7 @@ def trng3live():
 
 def livePlot():
     global selectedLive
-    global isLiveOn
+    global thread
     if isLiveOn == True:
         tk.messagebox.showinfo('WARNING !!! ', ' Press Stop before starting new Plot')
         return
@@ -807,7 +807,7 @@ def livePlot():
 
 
 def stopLive():
-    global isLiveOn
+    global thread
     if isLiveOn == True:
         isLiveOn = False
         # ani.event_source.stop()
@@ -832,7 +832,7 @@ btn32.grid(column=2, row=1, sticky="ew")  # posição do botão
 # Confirma saída do programa e fecha de vez
 def confirmExit():
     if tk.messagebox.askokcancel('Quit', 'Are you sure you want to exit?'):
-        global isLiveOn
+        global thread
         global isCapturingOn
         isLiveOn = False
         isCapturingOn = False

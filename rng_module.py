@@ -6,7 +6,6 @@ import threading
 # External imports
 import PySimpleGUI as sg
 import pandas as pd
-import PySimpleGUI as sg
 import matplotlib.pyplot as plt
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg

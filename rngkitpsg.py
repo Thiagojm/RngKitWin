@@ -25,12 +25,6 @@ global zscore_array
 zscore_array = []
 
 
-def live_plot(values, window):
-    while thread:
-        #livebblaWin(values, window)
-        trng3live(window)
-
-
 
 def main():
     # Mensagem para versão console
@@ -133,6 +127,11 @@ Do not close this window!""")
         fig_agg.draw()
     window.close()
 
+def live_plot(values, window):
+    if values['bit_live']:
+        livebblaWin(values, window)
+    elif values['true3_live']:
+        rm.trng3live(window)
 
 def livebblaWin(values, window):  # Function to take live data from bitbabbler
     global thread

@@ -1,14 +1,20 @@
 # Default imports
 import time
 from datetime import datetime
+import time
 import threading
+import subprocess
+from time import localtime, strftime
 
 # External imports
-import PySimpleGUI as sg
 import pandas as pd
+import PySimpleGUI as sg
 import matplotlib.pyplot as plt
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from bitstring import BitArray
+import serial
+from serial.tools import list_ports
 
 # Internal imports
 
@@ -25,3 +31,4 @@ def increase(index_number_array, zscore_array):
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print("Current Time =", current_time)
+

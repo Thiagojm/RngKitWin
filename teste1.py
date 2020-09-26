@@ -13,7 +13,7 @@ thread = False
 index_number_array = []
 zscore_array = []
 
-data_file = "1-SavedFiles/2019_teste.csv"
+data_file = "C:/Users/tjmpl/Documents/Projetos/RngKitWin/1-SavedFiles/2019_teste.csv"
 
 
 def file_to_excel():
@@ -198,4 +198,4 @@ def ztest_pandas(data_file):
     ztest['Zscore'] = (ztest['Average'] - 1024) / (22.62741699796 / (ztest['index'] ** 0.5))
     return ztest
 
-print(timeit.timeit(file_to_excel, number=1000)/1000)
+print(timeit.timeit(file_to_excel, number=1)/1)

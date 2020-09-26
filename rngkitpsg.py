@@ -98,6 +98,7 @@ Do not close this window!""")
             break
         elif event == "Generate":
             print(values)
+            rm.file_to_excel(values["open_file"])
         elif event == 'live_plot':
             global thread
             if not thread:

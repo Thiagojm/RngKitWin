@@ -41,33 +41,21 @@ Do not close this window!""")
     sg.theme('DarkBlue14')
 
     # TAB 1 - Captura/ Análise
-    coluna_1_tab_1 = [[sg.Frame(title="Resumo", layout=[
-        [sg.T("Ticker da ação:"), sg.Input(k="stock_name", size=(10, 1)),
-         sg.B("Exibir", k="Exibir", bind_return_key=True)],
-        [sg.T("Nome da Empresa:"), sg.T("", k="nome_empresa", size=(25, 1), relief="sunken")],
-        [sg.T("Preço:", size=(27, 1)), sg.T("", k="preco_atual", size=(13, 1), relief="sunken")],
-        [sg.T("Preço/Lucro(P/L):", size=(27, 1)), sg.T("", k="preco_lucro", size=(13, 1), relief="sunken")],
-        [sg.T("Preço/Valor Patrimonial(P/VP):", size=(27, 1)), sg.T("", k="preco_vp", size=(13, 1), relief="sunken")],
-        [sg.T("P/L * P/VP:", size=(27, 1)), sg.T("", k="pl_vp", size=(13, 1), relief="sunken")],
-        [sg.T("Dividend Yield:", size=(27, 1)), sg.T("", k="div_yeild", size=(13, 1), relief="sunken")],
-        [sg.T("Lucro por ação(LPA):", size=(27, 1)), sg.T("", k="LPA", size=(13, 1), relief="sunken")],
-        [sg.T("Valor Patrimonial por ação(VPA):", size=(27, 1)), sg.T("", k="VPA", size=(13, 1), relief="sunken")],
-        [sg.T("ROE:", size=(27, 1)), sg.T("", k="ROE", size=(13, 1), relief="sunken")],
-        [sg.T("Liquidez Corrente:", size=(27, 1)), sg.T("", k="current_ratio", size=(13, 1), relief="sunken")],
-        [sg.T("Dívida sobre Patrimômino:", size=(27, 1)), sg.T("", k="debt_to_equity", size=(13, 1), relief="sunken")],
-        [sg.T("Lucro Líquido 12m:", size=(27, 1)), sg.T("", k="lucro_liquido_12m", size=(13, 1), relief="sunken")],
-        [sg.T("Total de ações:", size=(27, 1)), sg.T("", k="total_shares", size=(13, 1), relief="sunken")]])]]
+    acquiring_data = [[sg.T("Choose RNG", size=(20, 1)), sg.T("RAW/XOR", size=(20, 1))],
+                     [sg.Radio('BitBabbler', "radio_graph_1", k="bit_ac", default=True, size=(19, 1)),
+                      sg.InputCombo((0, 1, 2, 3, 4), default_value=0, size=(4, 1), k="ac_combo", enable_events=False,
+                                    readonly=True), sg.T("", size=(2, 1)), sg.B("Start", k='ac_button', size=(20, 1))],
+                     [sg.Radio('TrueRNG', "radio_graph_1", k="true3_ac", size=(20, 1))],
+                      [sg.Radio('TrueRNG + BitBabbler', "radio_graph_1", k="true3_bit_ac", size=(20, 1))]
+                      ]
 
-    coluna_2_tab_1 = [[sg.Frame(title="Índice PEG", layout=[
-        [sg.T("PEG 12 meses:", size=(23, 1)), sg.T("", k="peg_12m", relief="sunken", size=(13, 1))],
-        [sg.T("PEG 36 meses:", size=(23, 1)), sg.T("", k="peg_36m", relief="sunken", size=(13, 1))], ])],
-                      [sg.Image(filename="datafiles/BitB.png")], [sg.Frame(title="Preço Justo da Ação", layout=[
-            [sg.Text("Juros Brasil 10 anos:"), sg.Input(k="br_10_anos", size=(8, 1), default_text="6.5"),
-             sg.B("Calcular", k="calcular")], [sg.T("Valor Intrínseco BR 10 anos:", size=(23, 1)),
-                                               sg.T("", k="vi_10_anos", relief="sunken", size=(13, 1))]])]]
+    data_analysis = [
+          [sg.Text('Select:', size=(8, 1)), sg.Input(), sg.FileBrowse()],
+          [sg.Text('Save as', size=(8, 1)), sg.Input(), sg.FileBrowse()],
+          [sg.B("Generate")]]
 
-    tab1_layout = [[sg.Text("Rng Kit", relief="raised", justification="center", size=(70, 1), font=("Calibri, 24"))],
-                   [sg.Column(coluna_1_tab_1), sg.Column(coluna_2_tab_1)]]
+    tab1_layout = [[sg.Frame("Acquiring Data", layout=acquiring_data, k="acquiring_data", size=(90, 9))],
+                   [sg.Frame("Data Analysis", layout=data_analysis, k="data_analysis", size=(90, 9))]]
 
     # TAB 2 - Gráfico
     graph_options = [[sg.T("Choose RNG", size=(20, 1)), sg.T("RAW/XOR", size=(20, 1))],
@@ -131,7 +119,7 @@ def live_plot(values, window):
     if values['bit_live']:
         livebblaWin(values, window)
     elif values['true3_live']:
-        rm.trng3live(window)
+        trng3live(window)
 
 def livebblaWin(values, window):  # Function to take live data from bitbabbler
     global thread

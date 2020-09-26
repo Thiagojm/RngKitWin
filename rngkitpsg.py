@@ -40,7 +40,7 @@ Do not close this window!""")
     # LightBlue6, LightPurple, Purple
     sg.theme('DarkBlue14')
 
-    # TAB 1 - Captura/ Análise
+    # TAB 1 - Capture / Analyse
     acquiring_data = [[sg.T("Choose RNG", size=(20, 1)), sg.T("RAW/XOR", size=(20, 1))],
                      [sg.Radio('BitBabbler', "radio_graph_1", k="bit_ac", default=True, size=(19, 1)),
                       sg.InputCombo((0, 1, 2, 3, 4), default_value=0, size=(4, 1), k="ac_combo", enable_events=False,
@@ -96,8 +96,10 @@ Do not close this window!""")
         event, values = window.read(timeout=200)
         if event == sg.WIN_CLOSED:  # always,  always give a way out!
             break
-        elif event == "Generate":
+        elif event == 'ac_button':
             print(values)
+            ac_data(values, window)
+        elif event == "Generate":
             rm.file_to_excel(values["open_file"])
         elif event == 'live_plot':
             global thread
@@ -117,6 +119,18 @@ Do not close this window!""")
         ax.set_ylabel('Z-Score', fontsize='medium')
         fig_agg.draw()
     window.close()
+
+
+# ---------------- Acquire Data Functions -------
+def ac_data(values, window):
+    if values["bit_ac"]:
+        print("1")
+    elif values['true3_ac']:
+        print("2")
+    elif values["true3_bit_ac"]:
+        print("3")
+
+# ----------------Live Plot Functions------------
 
 def live_plot(values, window):
     if values['bit_live']:

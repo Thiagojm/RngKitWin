@@ -50,8 +50,8 @@ Do not close this window!""")
                       ]
 
     data_analysis = [
-          [sg.Text('Select:', size=(8, 1)), sg.Input(), sg.FileBrowse()],
-          [sg.Text('Save as', size=(8, 1)), sg.Input(), sg.FileBrowse()],
+          [sg.Text('Select file:'), sg.Input(), sg.FileBrowse(key='open_file',
+        file_types=(('CSV and Binary', '.csv .bin'),), initial_folder="./1-SavedFiles")],
           [sg.B("Generate")]]
 
     tab1_layout = [[sg.Frame("Acquiring Data", layout=acquiring_data, k="acquiring_data", size=(90, 9))],
@@ -96,6 +96,8 @@ Do not close this window!""")
         event, values = window.read(timeout=200)
         if event == sg.WIN_CLOSED:  # always,  always give a way out!
             break
+        elif event == "Generate":
+            print(values)
         elif event == 'live_plot':
             global thread
             if not thread:

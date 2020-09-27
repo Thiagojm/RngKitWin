@@ -31,6 +31,12 @@ def draw_figure(canvas, figure):
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
 
+def open_folder():
+    script_path = os.getcwd()
+    path = f"{script_path}/1-SavedFiles/"
+    path = os.path.realpath(path)
+    os.startfile(path)
+
 def increase(index_number_array, zscore_array):
     index_number_array.append(index_number_array[-1] + 1)
     zscore_array.append(zscore_array[-1] + 1)
@@ -62,7 +68,8 @@ def file_to_excel(data_file):
         popupmsg('File Saved', 'Saved as ' + file_to_save)
         return
     elif data_file[-3:] == "bin":
-        popupmsg("Atention!", "This could take a few seconds, please wait")
+        sg.PopupQuickMessage("Working, please wait... this could take many seconds.", background_color="Grey", font="Calibri, 18",
+                             auto_close_duration=2)
         num_ones_array = []
         with open(data_file, "rb") as file:  # open binary file
             bin_hex = BitArray(file)  # bin to hex

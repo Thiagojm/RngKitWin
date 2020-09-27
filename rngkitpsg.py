@@ -38,9 +38,8 @@ Do not close this window!""")
     #     texto = f.read()
 
     # THEME
-    # Good Ones: BluePurple, BlueMono, DarkBlue9, DarkGrey7, DarkTeal, DarkTeal5, DarkTeal8, LightBlue1, LightBlue2,
-    # LightBlue6, LightPurple, Purple
-    sg.theme('DarkBlue14')
+    # Good Ones: DarkBlue14, Dark, DarkBlue, DarkBlue3, DarkTeal1, DarkTeal10, DarkTeal9, LightGreen
+    sg.theme('DarkBlue')
 
     # TAB 1 - Capture / Analyse
     acquiring_data = [[sg.T("Choose RNG", size=(20, 1)), sg.T("RAW/XOR", size=(20, 1))],
@@ -54,7 +53,7 @@ Do not close this window!""")
     data_analysis = [
           [sg.Text('Select file:'), sg.Input(), sg.FileBrowse(key='open_file',
         file_types=(('CSV and Binary', '.csv .bin'),), initial_folder="./1-SavedFiles")],
-          [sg.B("Generate")]]
+          [sg.B("Generate"), sg.B("Open Output Folder", k="out_folder")]]
 
     tab1_layout = [[sg.Frame("Acquiring Data", layout=acquiring_data, k="acquiring_data", size=(90, 9))],
                    [sg.Frame("Data Analysis", layout=data_analysis, k="data_analysis", size=(90, 9))]]
@@ -99,7 +98,6 @@ Do not close this window!""")
         if event == sg.WIN_CLOSED:  # always,  always give a way out!
             break
         elif event == 'ac_button':
-            print(values)
             global thread_cap
             if not thread_cap:
                 thread_cap = True
@@ -108,6 +106,8 @@ Do not close this window!""")
             else:
                 thread_cap = False
                 window['ac_button'].update("Start")
+        elif event == "out_folder":
+            rm.open_folder()
         elif event == "Generate":
             rm.file_to_excel(values["open_file"])
         elif event == 'live_plot':
@@ -135,15 +135,15 @@ def ac_data(values, window):
     if values["bit_ac"]:
         bit_cap(values, window)
     elif values['true3_ac']:
-        trng3_cap()
+        trng3_cap(window)
     elif values["true3_bit_ac"]:
-        print("3")
+        threading.Thread(target=bit_cap, args=(values, window), daemon=True).start()
+        trng3_cap(window)
+
 
 def bit_cap(values, window):  # criar função para quando o botão for clicado
     xor_value = values["ac_combo"]
     global thread_cap
-    #thread_cap = True
-    #startupinfo = None
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(xor_value))
@@ -169,15 +169,14 @@ def bit_cap(values, window):  # criar função para quando o botão for clicado
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        # print(1 - (end_cap - start_cap)/1000)
+        #print(1 - (end_cap - start_cap)/1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:
             pass
 
-def trng3_cap():
+def trng3_cap(window):
     global thread_cap
-    #thread_cap = True
     blocksize = 256
     ports = dict()
     ports_avaiable = list(list_ports.comports())
@@ -193,16 +192,22 @@ def trng3_cap():
         with open(file_name + '.bin', "ab") as bin_file:  # save binary file
             try:
                 ser = serial.Serial(port=rng_com_port, timeout=10)  # timeout set at 10 seconds in case the read fails
-            except:
+                if (ser.isOpen() == False):
+                    ser.open()
+                ser.setDTR(True)
+                ser.flushInput()
+            except Exception:
                 rm.popupmsg("Warning!", f"Port Not Usable! Do you have permissions set to read {rng_com_port}?")
-            if (ser.isOpen() == False):
-                ser.open()
-            ser.setDTR(True)
-            ser.flushInput()
+                thread_cap = False
+                window['ac_button'].update("Start")
+                break
             try:
                 x = ser.read(blocksize)  # read bytes from serial port
-            except:
+            except Exception:
                 rm.popupmsg("Warning!", "Read failed!")
+                thread_cap = False
+                window['ac_button'].update("Start")
+                break
             if bin_file != 0:
                 bin_file.write(x)
             ser.close()
@@ -214,7 +219,7 @@ def trng3_cap():
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        # print(1 - (end_cap - start_cap) / 1000)
+        #print(1 - (end_cap - start_cap) / 1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:
@@ -271,7 +276,7 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        # print(1 - (end_cap - start_cap) / 1000)
+        #print(1 - (end_cap - start_cap) / 1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:
@@ -303,14 +308,16 @@ def trng3live(window):
         with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
             try:
                 ser = serial.Serial(port=rng_com_port, timeout=10)  # timeout set at 10 seconds in case the read fails
-            except:
-                print('Port Not Usable!')
-                print('Do you have permissions set to read ' + rng_com_port + ' ?')
+            except Exception:
+                thread_live = False
+                rm.popupmsg("Warning!", f"Port Not Usable! Do you have permissions set to read {rng_com_port}?")
+                window['live_plot'].update("Start")
+                return
             # Open the serial port if it isn't open
             if (ser.isOpen() == False):
                 try:
                     ser.open()
-                except:
+                except Exception:
                     thread_live = False
                     sg.popup_non_blocking('WARNING !!!',
                                           "Something went wrong, is the device attached? Attach it and try again!!!",
@@ -324,8 +331,11 @@ def trng3live(window):
             ser.flushInput()
             try:
                 chunk = ser.read(blocksize)  # read bytes from serial port
-            except:
-                print('Read Failed!!!')  # If we were able to open the file, write to disk
+            except Exception:
+                thread_live = False
+                rm.popupmsg("Warning!", "Read Failed!!!")
+                window['live_plot'].update("Start")
+                return
             if bin_file != 0:
                 bin_file.write(chunk)
             # Close the serial port
@@ -342,7 +352,7 @@ def trng3live(window):
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        # print(1 - (end_cap - start_cap) / 1000)
+        #print(1 - (end_cap - start_cap) / 1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:

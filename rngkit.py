@@ -35,11 +35,11 @@ a = f.add_subplot(111)
 index_number_array = []
 zscore_array = []
 global script_path
-global thread_live
+global isLiveOn
 global selectedLive
 script_path = os.getcwd()
-thread_cap = False
-thread_live = False
+isCapturingOn = False
+isLiveOn = False
 
 def animate(i):
     xar = index_number_array
@@ -512,7 +512,7 @@ labelmatrix.grid(row=0, column=0, sticky="wens")
 
 def bbla():  # criar função para quando o botão for clicado
     selectedCombo = comboBbla.get()
-    global thread_cap
+    global isCapturingOn
     isCapturingOn = True
     startupinfo = None
     startupinfo = subprocess.STARTUPINFO()
@@ -540,7 +540,7 @@ def bbla():  # criar função para quando o botão for clicado
 
 
 def trng3():
-    global thread_cap
+    global isCapturingOn
     isCapturingOn = True
     blocksize = 256
     ports = dict()
@@ -591,7 +591,7 @@ def mbbla():
 
 
 def startCollecting():  # criar função para quando o botão for clicado
-    global thread_cap
+    global isCapturingOn
     global selectedColeta
     if isCapturingOn == False:
         isCapturingOn = True
@@ -612,7 +612,7 @@ def startCollecting():  # criar função para quando o botão for clicado
 
 
 def stopCollecting():
-    global thread_cap
+    global isCapturingOn
     global selectedColeta
     if isCapturingOn == True:
         isCapturingOn = False
@@ -678,7 +678,7 @@ lbl31.grid(column=0, row=0, sticky="ew")  # posição do label
 
 # Funções
 def livebblaWin():  # Function to take live data from bitbabbler
-    global thread_live
+    global isLiveOn
     global zscore_array
     global index_number_array
     isLiveOn = True
@@ -724,7 +724,7 @@ def livebblaWin():  # Function to take live data from bitbabbler
 
 
 def trng3live():
-    global thread_live
+    global isLiveOn
     global zscore_array
     global index_number_array
     isLiveOn = True
@@ -795,7 +795,7 @@ def trng3live():
 
 def livePlot():
     global selectedLive
-    global thread_live
+    global isLiveOn
     if isLiveOn == True:
         tk.messagebox.showinfo('WARNING !!! ', ' Press Stop before starting new Plot')
         return
@@ -807,7 +807,7 @@ def livePlot():
 
 
 def stopLive():
-    global thread_live
+    global isLiveOn
     if isLiveOn == True:
         isLiveOn = False
         # ani.event_source.stop()
@@ -832,8 +832,8 @@ btn32.grid(column=2, row=1, sticky="ew")  # posição do botão
 # Confirma saída do programa e fecha de vez
 def confirmExit():
     if tk.messagebox.askokcancel('Quit', 'Are you sure you want to exit?'):
-        global thread_live
-        global thread_cap
+        global isLiveOn
+        global isCapturingOn
         isLiveOn = False
         isCapturingOn = False
         time.sleep(0.5)

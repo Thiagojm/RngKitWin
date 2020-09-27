@@ -5,8 +5,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
 import threading
 
-global thread
-thread = False
+global thread_live
+thread_live = False
 
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
@@ -15,7 +15,7 @@ def draw_figure(canvas, figure):
     return figure_canvas_agg
 
 def increase(index_number_array, zscore_array):
-    while thread:
+    while thread_live:
         index_number_array.append(index_number_array[-1] + 1)
         zscore_array.append(zscore_array[-1] + 1)
         time.sleep(1)
@@ -48,7 +48,7 @@ def main():
         if event in ("Exit", sg.WIN_CLOSED):  # always,  always give a way out!
             break
         elif event == 'live_plot':
-            global thread
+            global thread_live
             if not thread:
                 thread = True
                 threading.Thread(target=increase, args=(index_number_array, zscore_array), daemon=True).start()

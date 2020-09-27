@@ -17,8 +17,10 @@ from serial.tools import list_ports
 # Internal imports
 import rng_module as rm
 
-global thread
-thread = False
+global thread_live
+thread_live = False
+global thread_cap
+thread_cap = False
 global index_number_array
 index_number_array = []
 global zscore_array
@@ -98,19 +100,26 @@ Do not close this window!""")
             break
         elif event == 'ac_button':
             print(values)
-            ac_data(values, window)
+            global thread_cap
+            if not thread_cap:
+                thread_cap = True
+                threading.Thread(target=ac_data, args=(values, window), daemon=True).start()
+                window['ac_button'].update("Stop")
+            else:
+                thread_cap = False
+                window['ac_button'].update("Start")
         elif event == "Generate":
             rm.file_to_excel(values["open_file"])
         elif event == 'live_plot':
-            global thread
-            if not thread:
-                thread = True
+            global thread_live
+            if not thread_live:
+                thread_live = True
                 ax.clear()
                 threading.Thread(target=live_plot, args=(values, window),
                                  daemon=True).start()
                 window['live_plot'].update("Stop")
             else:
-                thread = False
+                thread_live = False
                 window['live_plot'].update("Start")
         # Live Plot on Loop
         ax.plot(index_number_array, zscore_array, color='orange')
@@ -124,11 +133,39 @@ Do not close this window!""")
 # ---------------- Acquire Data Functions -------
 def ac_data(values, window):
     if values["bit_ac"]:
-        print("1")
+        bit_cap(values)
     elif values['true3_ac']:
         print("2")
     elif values["true3_bit_ac"]:
         print("3")
+
+def bit_cap(values):  # criar função para quando o botão for clicado
+    xor_value = values["ac_combo"]
+    global thread_cap
+    thread_cap = True
+    startupinfo = None
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(xor_value))
+    file_name = f"1-SavedFiles/{file_name}"
+    while thread_cap:
+        start_cap = int(time.time() * 1000)
+        with open(file_name + '.bin', "ab") as bin_file:  # save binary file
+            proc = subprocess.Popen("datafiles/seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(xor_value),
+                                    stdout=subprocess.PIPE, startupinfo=startupinfo, stderr=subprocess.DEVNULL)
+            chunk = proc.stdout.read()
+            bin_file.write(chunk)
+        bin_hex = BitArray(chunk)  # bin to hex
+        bin_ascii = bin_hex.bin  # hex to ASCII
+        num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
+        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+            write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
+        end_cap = int(time.time() * 1000)
+        # print(1 - (end_cap - start_cap)/1000)
+        try:
+            time.sleep(1 - (end_cap - start_cap) / 1000)
+        except Exception:
+            pass
 
 # ----------------Live Plot Functions------------
 
@@ -139,10 +176,10 @@ def live_plot(values, window):
         trng3live(window)
 
 def livebblaWin(values, window):  # Function to take live data from bitbabbler
-    global thread
+    global thread_live
     global zscore_array
     global index_number_array
-    thread = True
+    thread_live = True
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     live_combo_value = values['live_combo']
@@ -152,7 +189,7 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
     csv_ones = []
     zscore_array = []
     index_number_array = []
-    while thread:
+    while thread_live:
         start_cap = int(time.time() * 1000)
         index_number += 1
         with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
@@ -163,7 +200,7 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
         bin_hex = BitArray(chunk)  # bin to hex
         bin_ascii = bin_hex.bin  # hex to ASCII
         if not bin_ascii:
-            thread = False
+            thread_live = False
             sg.popup_non_blocking('WARNING !!!',
                                   "Something went wrong, is the device attached? Attach it and try again!!!",
                                   keep_on_top=True, no_titlebar=False, grab_anywhere=True, font="Calibri, 18",
@@ -188,10 +225,10 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
 
 
 def trng3live(window):
-    global thread
+    global thread_live
     global zscore_array
     global index_number_array
-    thread = True
+    thread_live = True
     file_name = time.strftime("%Y%m%d-%H%M%S_trng")
     file_name = f"1-SavedFiles/{file_name}"
     index_number = 0
@@ -206,7 +243,7 @@ def trng3live(window):
         if temp[1].startswith("TrueRNG"):
             if rng_com_port == None:  # always chooses the 1st TrueRNG found
                 rng_com_port = str(temp[0])
-    while thread:
+    while thread_live:
         start_cap = int(time.time() * 1000)
         index_number += 1
         with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
@@ -220,7 +257,7 @@ def trng3live(window):
                 try:
                     ser.open()
                 except:
-                    thread = False
+                    thread_live = False
                     sg.popup_non_blocking('WARNING !!!',
                                           "Something went wrong, is the device attached? Attach it and try again!!!",
                                           keep_on_top=True, no_titlebar=False, grab_anywhere=True, font="Calibri, 18",

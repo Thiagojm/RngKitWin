@@ -5,11 +5,11 @@ from textwrap import wrap
 import timeit
 
 global script_path
-global thread
+global thread_live
 global selectedLive
 script_path = os.getcwd()
-isCapturingOn = False
-thread = False
+thread_cap = False
+thread_live = False
 index_number_array = []
 zscore_array = []
 

@@ -27,7 +27,6 @@ global zscore_array
 zscore_array = []
 
 
-
 def main():
     # Mensagem para versão console
     print("""Welcome!
@@ -42,18 +41,18 @@ Do not close this window!""")
     sg.theme('DarkBlue')
 
     # TAB 1 - Capture / Analyse
-    acquiring_data = [[sg.T("Choose RNG", size=(20, 1)), sg.T("RAW/XOR", size=(20, 1))],
-                     [sg.Radio('BitBabbler', "radio_graph_1", k="bit_ac", default=True, size=(19, 1)),
-                      sg.InputCombo((0, 1, 2, 3, 4), default_value=0, size=(4, 1), k="ac_combo", enable_events=False,
-                                    readonly=True), sg.T("", size=(2, 1)), sg.B("Start", k='ac_button', size=(20, 1))],
-                     [sg.Radio('TrueRNG', "radio_graph_1", k="true3_ac", size=(20, 1))],
-                      [sg.Radio('TrueRNG + BitBabbler', "radio_graph_1", k="true3_bit_ac", size=(20, 1))]
-                      ]
+    acquiring_data = [[sg.T("Choose RNG", size=(16, 1)), sg.T("RAW(0)/XOR(1,2...)", size=(20, 1))],
+                      [sg.Radio('BitBabbler', "radio_graph_1", k="bit_ac", default=True, size=(19, 1)),
+                       sg.InputCombo((0, 1, 2, 3, 4), default_value=0, size=(4, 1), k="ac_combo", enable_events=False,
+                                     readonly=True), sg.T("", size=(4, 1)), sg.B("Start", k='ac_button', size=(20, 1))],
+                      [sg.Radio('TrueRNG', "radio_graph_1", k="true3_ac", size=(36, 1)),
+                       sg.T("      Idle", k="stat_ac", text_color="orange", size=(10,1))],
+                      [sg.Radio('TrueRNG + BitBabbler', "radio_graph_1", k="true3_bit_ac", size=(20, 1))]]
 
-    data_analysis = [
-          [sg.Text('Select file:'), sg.Input(), sg.FileBrowse(key='open_file',
-        file_types=(('CSV and Binary', '.csv .bin'),), initial_folder="./1-SavedFiles")],
-          [sg.B("Generate"), sg.B("Open Output Folder", k="out_folder")]]
+    data_analysis = [[sg.Text('Select file:'), sg.Input(),
+                      sg.FileBrowse(key='open_file', file_types=(('CSV and Binary', '.csv .bin'),),
+                                    initial_folder="./1-SavedFiles")],
+        [sg.B("Generate"), sg.B("Open Output Folder", k="out_folder")]]
 
     tab1_layout = [[sg.Frame("Acquiring Data", layout=acquiring_data, k="acquiring_data", size=(90, 9))],
                    [sg.Frame("Data Analysis", layout=data_analysis, k="data_analysis", size=(90, 9))]]
@@ -103,9 +102,11 @@ Do not close this window!""")
                 thread_cap = True
                 threading.Thread(target=ac_data, args=(values, window), daemon=True).start()
                 window['ac_button'].update("Stop")
+                window["stat_ac"].update("Capturing", text_color="green")
             else:
                 thread_cap = False
                 window['ac_button'].update("Start")
+                window["stat_ac"].update("      Idle", text_color="orange")
         elif event == "out_folder":
             rm.open_folder()
         elif event == "Generate":
@@ -115,8 +116,7 @@ Do not close this window!""")
             if not thread_live:
                 thread_live = True
                 ax.clear()
-                threading.Thread(target=live_plot, args=(values, window),
-                                 daemon=True).start()
+                threading.Thread(target=live_plot, args=(values, window), daemon=True).start()
                 window['live_plot'].update("Stop")
             else:
                 thread_live = False
@@ -164,16 +164,18 @@ def bit_cap(values, window):  # criar função para quando o botão for clicado
                                   keep_on_top=True, no_titlebar=False, grab_anywhere=True, font="Calibri, 18",
                                   icon="src/BitB.ico")
             window['ac_button'].update("Start")
+            window["stat_ac"].update("      Idle", text_color="orange")
             break
         num_ones_array = int(bin_ascii.count('1'))  # count numbers of ones in the 2048 string
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        #print(1 - (end_cap - start_cap)/1000)
+        # print(1 - (end_cap - start_cap)/1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:
             pass
+
 
 def trng3_cap(window):
     global thread_cap
@@ -200,6 +202,7 @@ def trng3_cap(window):
                 rm.popupmsg("Warning!", f"Port Not Usable! Do you have permissions set to read {rng_com_port}?")
                 thread_cap = False
                 window['ac_button'].update("Start")
+                window["stat_ac"].update("      Idle", text_color="orange")
                 break
             try:
                 x = ser.read(blocksize)  # read bytes from serial port
@@ -207,6 +210,7 @@ def trng3_cap(window):
                 rm.popupmsg("Warning!", "Read failed!")
                 thread_cap = False
                 window['ac_button'].update("Start")
+                window["stat_ac"].update("      Idle", text_color="orange")
                 break
             if bin_file != 0:
                 bin_file.write(x)
@@ -219,7 +223,7 @@ def trng3_cap(window):
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        #print(1 - (end_cap - start_cap) / 1000)
+        # print(1 - (end_cap - start_cap) / 1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:
@@ -233,6 +237,7 @@ def live_plot(values, window):
         livebblaWin(values, window)
     elif values['true3_live']:
         trng3live(window)
+
 
 def livebblaWin(values, window):  # Function to take live data from bitbabbler
     global thread_live
@@ -276,7 +281,7 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        #print(1 - (end_cap - start_cap) / 1000)
+        # print(1 - (end_cap - start_cap) / 1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:
@@ -352,7 +357,7 @@ def trng3live(window):
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
-        #print(1 - (end_cap - start_cap) / 1000)
+        # print(1 - (end_cap - start_cap) / 1000)
         try:
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:

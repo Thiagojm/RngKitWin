@@ -133,31 +133,39 @@ Do not close this window!""")
 # ---------------- Acquire Data Functions -------
 def ac_data(values, window):
     if values["bit_ac"]:
-        bit_cap(values)
+        bit_cap(values, window)
     elif values['true3_ac']:
-        print("2")
+        trng3_cap()
     elif values["true3_bit_ac"]:
         print("3")
 
-def bit_cap(values):  # criar função para quando o botão for clicado
+def bit_cap(values, window):  # criar função para quando o botão for clicado
     xor_value = values["ac_combo"]
     global thread_cap
-    thread_cap = True
-    startupinfo = None
+    #thread_cap = True
+    #startupinfo = None
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(xor_value))
     file_name = f"1-SavedFiles/{file_name}"
     while thread_cap:
         start_cap = int(time.time() * 1000)
-        with open(file_name + '.bin', "ab") as bin_file:  # save binary file
+        with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
             proc = subprocess.Popen("datafiles/seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(xor_value),
-                                    stdout=subprocess.PIPE, startupinfo=startupinfo, stderr=subprocess.DEVNULL)
+                                    stdout=subprocess.PIPE, startupinfo=startupinfo)
             chunk = proc.stdout.read()
             bin_file.write(chunk)
         bin_hex = BitArray(chunk)  # bin to hex
         bin_ascii = bin_hex.bin  # hex to ASCII
-        num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
+        if not bin_ascii:
+            thread_cap = False
+            sg.popup_non_blocking('WARNING !!!',
+                                  "Something went wrong, is the device attached? Attach it and try again!!!",
+                                  keep_on_top=True, no_titlebar=False, grab_anywhere=True, font="Calibri, 18",
+                                  icon="src/BitB.ico")
+            window['ac_button'].update("Start")
+            break
+        num_ones_array = int(bin_ascii.count('1'))  # count numbers of ones in the 2048 string
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
@@ -166,6 +174,52 @@ def bit_cap(values):  # criar função para quando o botão for clicado
             time.sleep(1 - (end_cap - start_cap) / 1000)
         except Exception:
             pass
+
+def trng3_cap():
+    global thread_cap
+    #thread_cap = True
+    blocksize = 256
+    ports = dict()
+    ports_avaiable = list(list_ports.comports())
+    rng_com_port = None
+    for temp in ports_avaiable:
+        if temp[1].startswith("TrueRNG"):
+            if rng_com_port == None:  # always chooses the 1st TrueRNG found
+                rng_com_port = str(temp[0])
+    file_name = time.strftime("%Y%m%d-%H%M%S_trng")
+    file_name = f"1-SavedFiles/{file_name}"
+    while thread_cap:
+        start_cap = int(time.time() * 1000)
+        with open(file_name + '.bin', "ab") as bin_file:  # save binary file
+            try:
+                ser = serial.Serial(port=rng_com_port, timeout=10)  # timeout set at 10 seconds in case the read fails
+            except:
+                rm.popupmsg("Warning!", f"Port Not Usable! Do you have permissions set to read {rng_com_port}?")
+            if (ser.isOpen() == False):
+                ser.open()
+            ser.setDTR(True)
+            ser.flushInput()
+            try:
+                x = ser.read(blocksize)  # read bytes from serial port
+            except:
+                rm.popupmsg("Warning!", "Read failed!")
+            if bin_file != 0:
+                bin_file.write(x)
+            ser.close()
+            if bin_file != 0:
+                bin_file.close()
+        bin_hex = BitArray(x)  # bin to hex
+        bin_ascii = bin_hex.bin  # hex to ASCII
+        num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
+        with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
+            write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
+        end_cap = int(time.time() * 1000)
+        # print(1 - (end_cap - start_cap) / 1000)
+        try:
+            time.sleep(1 - (end_cap - start_cap) / 1000)
+        except Exception:
+            pass
+
 
 # ----------------Live Plot Functions------------
 

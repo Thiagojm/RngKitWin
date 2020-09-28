@@ -46,7 +46,7 @@ Do not close this window!""")
                        sg.InputCombo((0, 1, 2, 3, 4), default_value=0, size=(4, 1), k="ac_combo", enable_events=False,
                                      readonly=True), sg.T("", size=(4, 1)), sg.B("Start", k='ac_button', size=(20, 1))],
                       [sg.Radio('TrueRNG', "radio_graph_1", k="true3_ac", size=(36, 1)),
-                       sg.T("      Idle", k="stat_ac", text_color="orange", size=(10,1))],
+                       sg.T("        Idle", k="stat_ac", text_color="orange", size=(10,1), relief="sunken")],
                       [sg.Radio('TrueRNG + BitBabbler', "radio_graph_1", k="true3_bit_ac", size=(20, 1))]]
 
     data_analysis = [[sg.Text('Select file:'), sg.Input(),
@@ -102,11 +102,11 @@ Do not close this window!""")
                 thread_cap = True
                 threading.Thread(target=ac_data, args=(values, window), daemon=True).start()
                 window['ac_button'].update("Stop")
-                window["stat_ac"].update("Capturing", text_color="green")
+                window["stat_ac"].update("  Capturing", text_color="green")
             else:
                 thread_cap = False
                 window['ac_button'].update("Start")
-                window["stat_ac"].update("      Idle", text_color="orange")
+                window["stat_ac"].update("        Idle", text_color="orange")
         elif event == "out_folder":
             rm.open_folder()
         elif event == "Generate":
@@ -151,9 +151,9 @@ def bit_cap(values, window):  # criar função para quando o botão for clicado
     while thread_cap:
         start_cap = int(time.time() * 1000)
         with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
-            proc = subprocess.Popen("datafiles/seedd.exe --limit-max-xfer --no-qa -f{} -b 256".format(xor_value),
-                                    stdout=subprocess.PIPE, startupinfo=startupinfo)
-            chunk = proc.stdout.read()
+            proc = subprocess.run(f'datafiles/seedd.exe --limit-max-xfer --no-qa -f{xor_value} -b 256',
+                                  stdout=subprocess.PIPE)
+            chunk = proc.stdout
             bin_file.write(chunk)
         bin_hex = BitArray(chunk)  # bin to hex
         bin_ascii = bin_hex.bin  # hex to ASCII
@@ -164,9 +164,9 @@ def bit_cap(values, window):  # criar função para quando o botão for clicado
                                   keep_on_top=True, no_titlebar=False, grab_anywhere=True, font="Calibri, 18",
                                   icon="src/BitB.ico")
             window['ac_button'].update("Start")
-            window["stat_ac"].update("      Idle", text_color="orange")
+            window["stat_ac"].update("        Idle", text_color="orange")
             break
-        num_ones_array = int(bin_ascii.count('1'))  # count numbers of ones in the 2048 string
+        num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = int(time.time() * 1000)
@@ -202,7 +202,7 @@ def trng3_cap(window):
                 rm.popupmsg("Warning!", f"Port Not Usable! Do you have permissions set to read {rng_com_port}?")
                 thread_cap = False
                 window['ac_button'].update("Start")
-                window["stat_ac"].update("      Idle", text_color="orange")
+                window["stat_ac"].update("        Idle", text_color="orange")
                 break
             try:
                 x = ser.read(blocksize)  # read bytes from serial port
@@ -210,7 +210,7 @@ def trng3_cap(window):
                 rm.popupmsg("Warning!", "Read failed!")
                 thread_cap = False
                 window['ac_button'].update("Start")
-                window["stat_ac"].update("      Idle", text_color="orange")
+                window["stat_ac"].update("        Idle", text_color="orange")
                 break
             if bin_file != 0:
                 bin_file.write(x)
@@ -257,9 +257,9 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
         start_cap = int(time.time() * 1000)
         index_number += 1
         with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
-            proc = subprocess.Popen('datafiles/seedd.exe --limit-max-xfer --no-qa -f{} -b 256'.format(live_combo_value),
-                                    stdout=subprocess.PIPE, startupinfo=startupinfo)
-            chunk = proc.stdout.read()
+            proc = subprocess.run(f'datafiles/seedd.exe --limit-max-xfer --no-qa -f{live_combo_value} -b 256',
+                                  stdout=subprocess.PIPE)
+            chunk = proc.stdout
             bin_file.write(chunk)
         bin_hex = BitArray(chunk)  # bin to hex
         bin_ascii = bin_hex.bin  # hex to ASCII
@@ -271,7 +271,7 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
                                   icon="src/BitB.ico")
             window['live_plot'].update("Start")
             break
-        num_ones_array = int(bin_ascii.count('1'))  # count numbers of ones in the 2048 string
+        num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
         csv_ones.append(num_ones_array)
         sums_csv = sum(csv_ones)
         avrg_csv = sums_csv / index_number

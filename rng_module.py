@@ -17,7 +17,6 @@ from bitstring import BitArray
 import serial
 from serial.tools import list_ports
 from bitstring import BitArray
-from textwrap import wrap
 
 # Internal imports
 
@@ -74,7 +73,7 @@ def file_to_excel(data_file):
         with open(data_file, "rb") as file:  # open binary file
             bin_hex = BitArray(file)  # bin to hex
         bin_ascii = bin_hex.bin
-        split_bin_ascii = wrap(bin_ascii, 2048)  # split in 2048 bits per line - 1 second
+        split_bin_ascii = list(map(''.join, zip(*[iter(bin_ascii)] * 2048))) # Waaaaay faster then wrap
 
         num_ones_array = bin_stuff(num_ones_array, split_bin_ascii)
 

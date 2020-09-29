@@ -20,7 +20,6 @@ import subprocess
 from PIL import Image, ImageTk
 import threading
 from bitstring import BitArray
-from textwrap import wrap
 import serial
 from serial.tools import list_ports
 
@@ -189,7 +188,7 @@ Press OK to start Analysis.""")
             bin_hex = BitArray(file)  # bin to hex
         bin_ascii = bin_hex.bin
         total_bits = len(bin_ascii)
-        split_bin_ascii = wrap(bin_ascii, 2048)  # split in 2048 bits per line - 1 second
+        split_bin_ascii = list(map(''.join, zip(*[iter(bin_ascii)] * 2048)))
         for i in split_bin_ascii:  # calculate number of 'ones' in each of the 2048 bits lines
             num_ones_array.append(i.count('1'))
         binSheet = pd.DataFrame()  # Array to Pandas Column
@@ -346,7 +345,7 @@ Press OK to start Analysis.""")
             bin_hex = BitArray(file)  # bin to hex
         bin_ascii = bin_hex.bin
         total_bits = len(bin_ascii)
-        split_bin_ascii = wrap(bin_ascii, 2048)  # split in 2048 bits per line - 1 second
+        split_bin_ascii = list(map(''.join, zip(*[iter(bin_ascii)] * 2048)))
         for i in split_bin_ascii:  # calculate number of 'ones' in each of the 2048 bits lines
             num_ones_array.append(i.count('1'))
         binSheet = pd.DataFrame()  # Array to Pandas Column

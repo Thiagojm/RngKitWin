@@ -149,7 +149,7 @@ def bit_cap(values, window):  # criar função para quando o botão for clicado
     file_name = time.strftime("%Y%m%d-%H%M%S_bitb_f{}".format(xor_value))
     file_name = f"1-SavedFiles/{file_name}"
     while thread_cap:
-        start_cap = int(time.time() * 1000)
+        start_cap = time.time()
         with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
             proc = subprocess.run(f'datafiles/seedd.exe --limit-max-xfer --no-qa -f{xor_value} -b 256',
                                   stdout=subprocess.PIPE)
@@ -169,10 +169,10 @@ def bit_cap(values, window):  # criar função para quando o botão for clicado
         num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
-        end_cap = int(time.time() * 1000)
-        # print(1 - (end_cap - start_cap)/1000)
+        end_cap = time.time()
+        #print(1 - (end_cap - start_cap))
         try:
-            time.sleep(1 - (end_cap - start_cap) / 1000)
+            time.sleep(1 - (end_cap - start_cap))
         except Exception:
             pass
 
@@ -190,7 +190,7 @@ def trng3_cap(window):
     file_name = time.strftime("%Y%m%d-%H%M%S_trng")
     file_name = f"1-SavedFiles/{file_name}"
     while thread_cap:
-        start_cap = int(time.time() * 1000)
+        start_cap = time.time()
         with open(file_name + '.bin', "ab") as bin_file:  # save binary file
             try:
                 ser = serial.Serial(port=rng_com_port, timeout=10)  # timeout set at 10 seconds in case the read fails
@@ -222,10 +222,10 @@ def trng3_cap(window):
         num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
-        end_cap = int(time.time() * 1000)
-        # print(1 - (end_cap - start_cap) / 1000)
+        end_cap = time.time()
+        # print(1 - (end_cap - start_cap))
         try:
-            time.sleep(1 - (end_cap - start_cap) / 1000)
+            time.sleep(1 - (end_cap - start_cap))
         except Exception:
             pass
 
@@ -254,7 +254,7 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
     zscore_array = []
     index_number_array = []
     while thread_live:
-        start_cap = int(time.time() * 1000)
+        start_cap = time.time()
         index_number += 1
         with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
             proc = subprocess.run(f'datafiles/seedd.exe --limit-max-xfer --no-qa -f{live_combo_value} -b 256',
@@ -280,10 +280,10 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
         index_number_array.append(index_number)
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
-        end_cap = int(time.time() * 1000)
-        # print(1 - (end_cap - start_cap) / 1000)
+        end_cap = time.time()
+        # print(1 - (end_cap - start_cap))
         try:
-            time.sleep(1 - (end_cap - start_cap) / 1000)
+            time.sleep(1 - (end_cap - start_cap))
         except Exception:
             pass
 
@@ -308,7 +308,7 @@ def trng3live(window):
             if rng_com_port == None:  # always chooses the 1st TrueRNG found
                 rng_com_port = str(temp[0])
     while thread_live:
-        start_cap = int(time.time() * 1000)
+        start_cap = time.time()
         index_number += 1
         with open(file_name + '.bin', "ab+") as bin_file:  # save binary file
             try:
@@ -356,10 +356,10 @@ def trng3live(window):
         index_number_array.append(index_number)
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
-        end_cap = int(time.time() * 1000)
+        end_cap = time.time()
         # print(1 - (end_cap - start_cap) / 1000)
         try:
-            time.sleep(1 - (end_cap - start_cap) / 1000)
+            time.sleep(1 - (end_cap - start_cap))
         except Exception:
             pass
 

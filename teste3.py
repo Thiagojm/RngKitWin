@@ -5,7 +5,7 @@ from bitstring import BitArray
 import time
 
 
-data_file = "1-SavedFiles/20200224T121659-t.bin"
+data_file = "1-SavedFiles/20190710T1926_conscius_pro_xor.bin"
 
 
 def bit_array():
@@ -13,8 +13,8 @@ def bit_array():
     with open(data_file, "rb") as file:  # open binary file
         bin_hex = BitArray(file)  # bin to hex
     bin_ascii = bin_hex.bin
-    #split_bin_ascii = wrap(bin_ascii, 2048) # 12 seg
-    split_bin_ascii = list(map(''.join, zip(*[iter(bin_ascii)] * 2048))) # 0.63 s
+    split_bin_ascii = wrap(bin_ascii, 2048) # 12 seg
+    #split_bin_ascii = list(map(''.join, zip(*[iter(bin_ascii)] * 2048))) # 0.63 s
     print(split_bin_ascii)
     end_func = time.time()
     total_time = end_func - start_func

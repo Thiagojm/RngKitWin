@@ -33,8 +33,8 @@ def main():
 Wait for the application to load!
 Do not close this window!""")
 
-    # with open("src/entenda.txt", "r", encoding="utf8") as f:
-    #     texto = f.read()
+    with open("src/instructions.txt", "r", encoding="utf8") as f:
+        texto = f.read()
 
     # THEME
     # Good Ones: DarkBlue14, Dark, DarkBlue, DarkBlue3, DarkTeal1, DarkTeal10, DarkTeal9, LightGreen
@@ -46,13 +46,13 @@ Do not close this window!""")
                        sg.InputCombo((0, 1, 2, 3, 4), default_value=0, size=(4, 1), k="ac_combo", enable_events=False,
                                      readonly=True), sg.T("", size=(4, 1)), sg.B("Start", k='ac_button', size=(20, 1))],
                       [sg.Radio('TrueRNG', "radio_graph_1", k="true3_ac", size=(36, 1)),
-                       sg.T("        Idle", k="stat_ac", text_color="orange", size=(10,1), relief="sunken")],
+                       sg.T("        Idle", k="stat_ac", text_color="orange", size=(10, 1), relief="sunken")],
                       [sg.Radio('TrueRNG + BitBabbler', "radio_graph_1", k="true3_bit_ac", size=(20, 1))]]
 
     data_analysis = [[sg.Text('Select file:'), sg.Input(),
                       sg.FileBrowse(key='open_file', file_types=(('CSV and Binary', '.csv .bin'),),
                                     initial_folder="./1-SavedFiles")],
-        [sg.B("Generate"), sg.B("Open Output Folder", k="out_folder")]]
+                     [sg.B("Generate"), sg.B("Open Output Folder", k="out_folder")]]
 
     tab1_layout = [[sg.Frame("Acquiring Data", layout=acquiring_data, k="acquiring_data", size=(90, 9))],
                    [sg.Frame("Data Analysis", layout=data_analysis, k="data_analysis", size=(90, 9))]]
@@ -62,7 +62,8 @@ Do not close this window!""")
                      [sg.Radio('BitBabbler', "radio_graph", k="bit_live", default=True, size=(19, 1)),
                       sg.InputCombo((0, 1), default_value=0, size=(4, 1), k="live_combo", enable_events=False,
                                     readonly=True), sg.T("", size=(2, 1)), sg.B("Start", k='live_plot', size=(20, 1))],
-                     [sg.Radio('TrueRNG3', "radio_graph", k="true3_live", size=(20, 1))]]
+                     [sg.Radio('TrueRNG3', "radio_graph", k="true3_live", size=(20, 1)),
+                      sg.T("        Idle", k="stat_live", text_color="orange", size=(10, 1), relief="sunken")]]
 
     live_graph = [[sg.Canvas(key='-CANVAS-')]]
 
@@ -71,7 +72,7 @@ Do not close this window!""")
 
     # TAB 3 - Instruções
     tab3_layout = [[sg.T("Instructions", relief="raised", justification="center", size=(70, 1), font=("Calibri, 24"))],
-                   [sg.Multiline(default_text="texto", size=(75, 19), disabled=True, enable_events=False,
+                   [sg.Multiline(default_text=texto, size=(75, 19), disabled=True, enable_events=False,
                                  font=("Calibri, 20"), pad=(5, 5))]]
 
     # LAYOUT
@@ -118,9 +119,11 @@ Do not close this window!""")
                 ax.clear()
                 threading.Thread(target=live_plot, args=(values, window), daemon=True).start()
                 window['live_plot'].update("Stop")
+                window["stat_live"].update("  Capturing", text_color="green")
             else:
                 thread_live = False
                 window['live_plot'].update("Start")
+                window["stat_live"].update("        Idle", text_color="orange")
         # Live Plot on Loop
         ax.plot(index_number_array, zscore_array, color='orange')
         ax.set_title("Live Plot")
@@ -170,7 +173,7 @@ def bit_cap(values, window):  # criar função para quando o botão for clicado
         with open(file_name + '.csv', "a+") as write_file:  # open file and append time and number of ones
             write_file.write('{} {}\n'.format(strftime("%H:%M:%S", localtime()), num_ones_array))
         end_cap = time.time()
-        #print(1 - (end_cap - start_cap))
+        # print(1 - (end_cap - start_cap))
         try:
             time.sleep(1 - (end_cap - start_cap))
         except Exception:
@@ -270,6 +273,7 @@ def livebblaWin(values, window):  # Function to take live data from bitbabbler
                                   keep_on_top=True, no_titlebar=False, grab_anywhere=True, font="Calibri, 18",
                                   icon="src/BitB.ico")
             window['live_plot'].update("Start")
+            window["stat_live"].update("        Idle", text_color="orange")
             break
         num_ones_array = bin_ascii.count('1')  # count numbers of ones in the 2048 string
         csv_ones.append(num_ones_array)
@@ -317,6 +321,7 @@ def trng3live(window):
                 thread_live = False
                 rm.popupmsg("Warning!", f"Port Not Usable! Do you have permissions set to read {rng_com_port}?")
                 window['live_plot'].update("Start")
+                window["stat_live"].update("        Idle", text_color="orange")
                 return
             # Open the serial port if it isn't open
             if (ser.isOpen() == False):
@@ -329,6 +334,7 @@ def trng3live(window):
                                           keep_on_top=True, no_titlebar=False, grab_anywhere=True, font="Calibri, 18",
                                           icon="src/BitB.ico")
                     window['live_plot'].update("Start")
+                    window["stat_live"].update("        Idle", text_color="orange")
                     return
             # Set Data Terminal Ready to start flow
             ser.setDTR(True)
@@ -340,6 +346,7 @@ def trng3live(window):
                 thread_live = False
                 rm.popupmsg("Warning!", "Read Failed!!!")
                 window['live_plot'].update("Start")
+                window["stat_live"].update("        Idle", text_color="orange")
                 return
             if bin_file != 0:
                 bin_file.write(chunk)

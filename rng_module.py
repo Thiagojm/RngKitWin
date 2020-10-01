@@ -69,13 +69,12 @@ def file_to_excel(data_file):
     elif data_file[-3:] == "bin":
         sg.PopupQuickMessage("Working, please wait... this could take many seconds.", background_color="Grey", font="Calibri, 18",
                              auto_close_duration=2)
-        num_ones_array = []
         with open(data_file, "rb") as file:  # open binary file
             bin_hex = BitArray(file)  # bin to hex
         bin_ascii = bin_hex.bin
         split_bin_ascii = list(map(''.join, zip(*[iter(bin_ascii)] * 2048))) # Waaaaay faster then wrap
 
-        num_ones_array = bin_stuff(num_ones_array, split_bin_ascii)
+        num_ones_array = list(map(lambda x: x.count("1"), split_bin_ascii))
 
         binSheet = binary_data(num_ones_array)
         data_file2 = os.path.basename(data_file)
@@ -110,12 +109,6 @@ def binary_data(num_ones_array):
     binSheet['Zscore'] = (binSheet['Average'] - 1024) / (22.62741699796 / (binSheet['Time'] ** 0.5))
     return binSheet
 
-
-def bin_stuff(num_ones_array, split_bin_ascii):
-
-    for i in split_bin_ascii:  # calculate number of 'ones' in each of the 2048 bits lines
-        num_ones_array.append(i.count('1'))
-    return num_ones_array
 
 def create_chart(workbook, data_file2):
     chart = workbook.add_chart({'type': 'line'})

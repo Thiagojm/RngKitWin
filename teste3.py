@@ -5,28 +5,14 @@ from bitstring import BitArray
 import time
 
 
-data_file = "1-SavedFiles/20190710T1926_conscius_pro_xor.bin"
+lista = ["111000", "101010", "000111"]
 
-
-def bit_array():
-    start_func = time.time()
-    with open(data_file, "rb") as file:  # open binary file
-        bin_hex = BitArray(file)  # bin to hex
-    bin_ascii = bin_hex.bin
-    split_bin_ascii = wrap(bin_ascii, 2048) # 12 seg
-    #split_bin_ascii = list(map(''.join, zip(*[iter(bin_ascii)] * 2048))) # 0.63 s
-    print(split_bin_ascii)
-    end_func = time.time()
-    total_time = end_func - start_func
-    print(total_time)
-
-bit_array()
+num_ones_array = list(map(lambda x: x.count("1"), lista))
 
 
 
+# for i in lista:  # calculate number of 'ones' in each of the 2048 bits lines
+#     num_ones_array.append(i.count('1'))
 
-def apendando(): # 10seg
-    o = []
-    while bin_ascii:
-        o.append(bin_ascii[:2048])
-        bin_ascii = bin_ascii[2048:]
+print(num_ones_array)
+

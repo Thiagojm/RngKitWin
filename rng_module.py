@@ -1,4 +1,5 @@
 # Default imports
+import re
 import time
 from datetime import datetime
 import time
@@ -72,10 +73,8 @@ def file_to_excel(data_file):
         with open(data_file, "rb") as file:  # open binary file
             bin_hex = BitArray(file)  # bin to hex
         bin_ascii = bin_hex.bin
-        split_bin_ascii = list(map(''.join, zip(*[iter(bin_ascii)] * 2048))) # Waaaaay faster then wrap
-
+        split_bin_ascii = re.findall("." * 2048, bin_ascii) # Waaaaay faster then wrap and map zip
         num_ones_array = list(map(lambda x: x.count("1"), split_bin_ascii))
-
         binSheet = binary_data(num_ones_array)
         data_file2 = os.path.basename(data_file)
         data_file2 = data_file2.replace(".bin", "")
@@ -85,7 +84,6 @@ def file_to_excel(data_file):
         binSheet.to_excel(writer, sheet_name='Z-Test', index=False)
         workbook = writer.book
         worksheet = writer.sheets['Z-Test']
-
         chart = create_chart(workbook, data_file2)
         chart.add_series({'values': ['Z-Test', 1, 4, number_rows, 4], 'categories': ['Z-Test', 1, 0, number_rows, 0]})
         worksheet.insert_chart('G2', chart)
